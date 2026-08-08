@@ -1,6 +1,6 @@
 # Implementation Plan
 
-Status: Phase 0 complete; Phase 1 not started
+Status: Phases 0 and 1 complete; Phase 2 is next
 Last updated: 2026-08-08
 
 ## Working model
