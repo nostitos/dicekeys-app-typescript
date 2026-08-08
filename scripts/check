@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 022
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib/build-contract.sh"
+if (($#)); then echo "error: check takes no arguments" >&2; exit 2; fi
+configure_build_environment
+cd "$REPOSITORY_ROOT"
+before_state="$(node scripts/tracked-state.mjs)"
+node "$SCRIPT_DIR/verify-sanitized-environment.mjs"
+while IFS= read -r script; do
+  node --check "$script"
+done < <(find scripts -type f -name '*.mjs' -print | LC_ALL=C sort)
+while IFS= read -r script; do
+  first_line="$(head -n 1 "$script")"
+  if [[ $first_line == *bash* ]]; then bash -n "$script"; fi
+done < <(find scripts -type f -print | LC_ALL=C sort)
+node scripts/test-environment-scrub.mjs
+node scripts/test-git-environment.mjs
+node scripts/test-offline-mode.mjs
+node scripts/test-cache-safety.mjs
+node scripts/test-cache-publication-safety.mjs
+node scripts/test-safe-clean.mjs
+node scripts/test-line-endings.mjs
+node scripts/test-ci-upload-policy.mjs
+node scripts/test-portable-path-containment.mjs
+node scripts/test-sbom-normalization.mjs
+node scripts/test-package-authentication-order.mjs
+node scripts/test-vendor-lf-contract.mjs
+node scripts/test-npm-cli-resolution.mjs
+node scripts/test-python-bytecode-policy.mjs
+node scripts/test-jest-result-policy.mjs
+node scripts/test-release-replay.mjs
+node scripts/test-source-state-provenance.mjs
+node scripts/test-source-cleanliness.mjs
+node scripts/test-tracked-state.mjs
+node scripts/test-release-checksum-completeness.mjs
+node scripts/test-unsigned-package-policy.mjs
+node scripts/test-unsigned-signing-proof.mjs
+node scripts/test-deterministic-tar-verifier.mjs
+node scripts/verify-build-contract.mjs --postinstall
+export SOURCE_DATE_EPOCH="$(node scripts/git-command.mjs show -s --format=%ct HEAD)"
+export DICEKEYS_RELEASE_BUILD=1
+
+python_command=python3
+if ! command -v "$python_command" >/dev/null 2>&1; then python_command=python; fi
+export PYTHONDONTWRITEBYTECODE=1
+"$python_command" -B -m unittest discover -s reference -p 'test_*.py' -v
+node scripts/verify-no-python-bytecode.mjs reference
+
+npm_cli --prefix common run build
+npm_cli --prefix web run typecheck
+mkdir -p .cache/test-results
+npm_cli --prefix web test -- --ci --verbose=false --json --outputFile="$REPOSITORY_ROOT/.cache/test-results/jest.json"
+node scripts/verify-jest-result.mjs .cache/test-results/jest.json
+npm_cli --prefix web run build-web
+npm_cli --prefix web run build-electron-html
+npm_cli --prefix electron run build
+npm_cli --prefix electron-forge run compile-forge-config
+npm_cli --prefix web run build-electron-forge-html
+
+after_state="$(node scripts/tracked-state.mjs)"
+if [[ $before_state != "$after_state" ]]; then
+  echo "error: check mutated the tracked or untracked source state" >&2
+  exit 1
+fi
+echo "check complete: reference parity, 13 Jest suites/1696 tests, web, Electron, and Forge check-only builds passed"

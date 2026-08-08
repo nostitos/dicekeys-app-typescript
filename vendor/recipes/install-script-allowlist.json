@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "roots": {
+    "common/package-lock.json": [],
+    "web/package-lock.json": [
+      "node_modules/esbuild",
+      "node_modules/fsevents"
+    ],
+    "electron/package-lock.json": [
+      "",
+      "node_modules/electron",
+      "node_modules/fsevents",
+      "node_modules/keytar"
+    ],
+    "electron-forge/package-lock.json": [
+      "node_modules/electron",
+      "node_modules/electron-winstaller",
+      "node_modules/fs-xattr",
+      "node_modules/keytar",
+      "node_modules/macos-alias"
+    ],
+    "vendor/build-tools/package-lock.json": []
+  }
+}

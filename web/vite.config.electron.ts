@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
+import { viteBuildConstants } from "./vite-build-metadata";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -12,11 +13,7 @@ export default defineConfig({
   //            will break all relative paths.
   //            (may the three days of debugging in March '22 rest in peace.)
   base: "./",
-  define: {
-    VITE_BUILD_VERSION: `"${process.env.npm_package_version}"`,
-    VITE_BUILD_DATE: `"${new Date().toLocaleString('en-us', { year: 'numeric', month: 'short', day: 'numeric' })}"`,
-    VITE_SET_APP_RUNNING_IN_ELECTRON: true
-  },
+  define: viteBuildConstants(true),
   build: {
     // Do not minify for Electron
     minify: false,

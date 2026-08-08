@@ -1,6 +1,6 @@
 # Implementation Plan
 
-Status: Phases 0 and 1 complete; Phase 2 is next
+Status: Phases 0, 1, and 2 complete; Phase 3 not started
 Last updated: 2026-08-08
 
 ## Working model
@@ -39,9 +39,13 @@ Gate: an independent reviewer can reproduce the algorithm from the specification
 
 ## Phase 2: build and dependency foundation
 
-Deliverables: credential-free bootstrap/check/release commands, pinned dependency provenance, offline rebuild after acquisition, checksums, licenses, and SBOM.
+Deliverables: credential-free bootstrap/check/release commands, pinned public-source package recipes, supported runtime pinning, offline rebuild after acquisition, checksums, license inventory, normalized SBOM, and clearly unsigned host-platform evaluation artifacts.
 
-Gate: a fresh machine can clone, bootstrap, test, and build without private package credentials.
+Gate: a fresh machine can clone, bootstrap, test, and build without private package credentials; a second run succeeds from acquired caches with networking denied; the generated provenance identifies every unresolved release blocker and sets `releaseEligible` to false.
+
+Result: passed independent review. A clean Linux/amd64 environment acquired every input without private credentials, ran all checks, and produced the unsigned evidence set. A separate Docker network namespace with no default route and direct HTTPS failing `ENETUNREACH` replayed bootstrap, all 13 Jest suites/1,696 tests, and the complete build from cache. The 14 checksum-bound evidence files matched the online run, and provenance recorded `dirty=false`, `releaseEligible=false`, and `acquisitionMode=cache-enforced-replay`.
+
+Phase 2 does not authorize public distribution. Repository/scanner licensing, reproducible WASM toolchains, content verification for native keytar inputs, an Electron upgrade, entitlement minimization, and signed fail-closed release infrastructure remain later release gates. See D-013 through D-017 in `DECISIONS.md`.
 
 ## Phase 3: isolated derivation module
 

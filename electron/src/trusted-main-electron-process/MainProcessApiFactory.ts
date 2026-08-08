@@ -13,6 +13,7 @@ const MainToPrimaryRendererAsyncApiFunctionNames = [
   "getRecipesToExport",
   "importRecipes",
   "loadRandomDiceKey",
+  "loadFromShares",
 ] as const;
 type MainToPrimaryRendererAsyncApiFunctionName = (typeof MainToPrimaryRendererAsyncApiFunctionNames)[number];
 // Ensure we've enumerated all function names
@@ -63,4 +64,3 @@ export const implementMainToAllRenderersClientInMainProcess = () => {
 }
 export const mainToAllRenderersClient = implementMainToAllRenderersClientInMainProcess();
   
-

@@ -16,13 +16,19 @@ Last updated: 2026-08-08
 
 ## Build and supply chain
 
-- [ ] Fresh clone bootstraps without personal credentials.
-- [ ] Tests and builds run offline after dependency acquisition.
-- [ ] Exact dependency versions and lockfiles are enforced.
-- [ ] WASM source commit, build instructions, hash, license, and provenance are published.
-- [ ] Install scripts are reviewed.
-- [ ] Dependency/license inventory and SBOM are published.
-- [ ] Release artifacts have SHA-256 checksums and provenance.
+- [x] Fresh clone bootstraps without personal credentials.
+- [x] Tests and builds run offline after dependency acquisition, including an independently observed Docker `--network none` replay.
+- [x] Exact dependency versions and lockfiles are enforced.
+- [x] Every public npm tarball in the inherited locks was independently content-verified against its SHA-512 SRI.
+- [x] Source-built DiceKeys replacements have pinned commits, acquisition hashes, normalized package-tree hashes, new artifact integrity, historical provenance, and clean-clone verification.
+- [ ] WASM source commit, portable pinned rebuild instructions, generated hash comparison, license, and provenance are published.
+- [ ] Repository and scanner redistribution rights are unambiguous and compatible with the intended release.
+- [ ] Keytar is replaced or every native input is acquired or rebuilt under content verification.
+- [ ] Electron is on a supported major and the upgraded application passes full security review.
+- [x] Phase 2 install scripts and every out-of-lock native acquisition path are inventoried and constrained by the build contract; unresolved legacy keytar delivery remains a release blocker above.
+- [x] A normalized dependency/license inventory and CycloneDX SBOM set are generated and checksum-bound for evaluation; public release publication remains blocked.
+- [x] Phase 2 evaluation artifacts have complete SHA-256 checksums and provenance.
+- [x] Every Phase 2 desktop artifact is labeled unsigned and records `releaseEligible: false`.
 
 ## Application security
 

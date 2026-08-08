@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 022
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib/build-contract.sh"
+OFFLINE=false
+ALLOW_DIRTY_EVALUATION=false
+for argument in "$@"; do
+  case "$argument" in
+    --offline) OFFLINE=true ;;
+    --allow-dirty-evaluation) ALLOW_DIRTY_EVALUATION=true ;;
+    *) echo "error: unknown argument: $argument" >&2; exit 2 ;;
+  esac
+done
+export OFFLINE
+sanitize_shell_environment
+set_offline_environment
+cd "$REPOSITORY_ROOT"
+if [[ $ALLOW_DIRTY_EVALUATION == true ]]; then
+  node scripts/verify-source-cleanliness.mjs --allow-dirty-evaluation
+else
+  if ! node scripts/verify-source-cleanliness.mjs; then
+    echo "For local pre-commit testing only, pass --allow-dirty-evaluation; output remains ineligible." >&2
+    exit 1
+  fi
+fi
+source_state_before="$(node scripts/tracked-state.mjs)"
+export DICEKEYS_BUILD_RELEASE_SOURCE_STATE_SHA256="$source_state_before"
+configure_build_environment
+node "$SCRIPT_DIR/verify-sanitized-environment.mjs"
+export SOURCE_DATE_EPOCH="$(node scripts/git-command.mjs show -s --format=%ct HEAD)"
+export DICEKEYS_RELEASE_BUILD=1
+export CSC_IDENTITY_AUTO_DISCOVERY=false
+export DICEKEYS_BUILD_RELEASE_OFFLINE="$OFFLINE"
+export DICEKEYS_BUILD_RELEASE_ALLOW_DIRTY_EVALUATION="$ALLOW_DIRTY_EVALUATION"
+if [[ $OFFLINE == true ]]; then
+  ./scripts/bootstrap --offline
+else
+  ./scripts/bootstrap
+fi
+
+./scripts/check
+
+# Forge is check-only. Rebuild the canonical Electron renderer after its check.
+npm_cli --prefix common run build
+npm_cli --prefix web run build-web
+npm_cli --prefix web run build-electron-html
+npm_cli --prefix electron run build
+
+node scripts/safe-clean.mjs release-artifacts electron/out/unsigned
+mkdir -p release-artifacts/sbom
+npm_cli --prefix electron run pack
+node scripts/assert-unsigned-package.mjs electron/out/unsigned release-artifacts/package-assertions.json
+
+commit_short="$(node scripts/git-command.mjs rev-parse --short=12 HEAD)"
+host_platform="$(node -p 'process.platform')"
+host_architecture="$(node -p 'process.arch')"
+desktop_content_root="$(node -e 'const assertion=require("./release-artifacts/package-assertions.json"); process.stdout.write(assertion.packagedContentRoot)')"
+desktop_archive_base="DiceKeys-desktop-${commit_short}-${host_platform}-${host_architecture}-unsigned-evaluation"
+node scripts/create-deterministic-tar.mjs \
+  "$desktop_content_root" \
+  "release-artifacts/${desktop_archive_base}.tar" \
+  release-artifacts/desktop-archive-manifest.json \
+  release-artifacts/symlink-manifest.json \
+  "$desktop_archive_base"
+node scripts/verify-desktop-archive.mjs \
+  "release-artifacts/${desktop_archive_base}.tar" \
+  "$desktop_content_root" \
+  release-artifacts/desktop-archive-manifest.json \
+  release-artifacts/desktop-archive-assertions.json
+
+if [[ $OFFLINE == true ]]; then
+  acquisition_label=cache-replay
+else
+  acquisition_label=online
+fi
+node scripts/create-deterministic-zip.mjs dist/web "release-artifacts/DiceKeys-web-${commit_short}-${acquisition_label}-UNSIGNED-EVALUATION.zip" web
+
+for root in . common web electron electron-forge vendor/build-tools; do
+  label="${root//\//-}"
+  label="${label//./root}"
+  npm_cli --prefix "$root" sbom --sbom-format cyclonedx --sbom-type application > "release-artifacts/sbom/${label}.raw.cdx.json"
+done
+
+node scripts/generate-release-metadata.mjs release-artifacts
+node scripts/verify-release-checksums.mjs release-artifacts
+source_state_after="$(node scripts/tracked-state.mjs)"
+if [[ $source_state_before != "$source_state_after" ]]; then
+  echo "error: build-release mutated the tracked, staged, or nonignored untracked source state" >&2
+  exit 1
+fi
+echo "build-release complete: local unsigned evaluation outputs only; releaseEligible=false"

@@ -4,7 +4,7 @@ Last updated: 2026-08-08
 
 ## Current state
 
-Phase 0 and Phase 1 are complete and independently reviewed. `DK-BIP39-24-v1` is frozen on `codex/phase-1-freeze-profile`. No application feature code has started; Phase 2 must resolve the credential-free build and package-provenance foundation before derivation-module work.
+Phases 0, 1, and 2 are complete and independently reviewed. `DK-BIP39-24-v1` is frozen on `codex/phase-1-freeze-profile`, and the credential-free build foundation is complete on `codex/phase-2-public-build-foundation`. No wallet feature code has started.
 
 | Item | State | Evidence |
 | --- | --- | --- |
@@ -21,18 +21,28 @@ Phase 0 and Phase 1 are complete and independently reviewed. `DK-BIP39-24-v1` is
 | Phase 1 vector corpus | Complete | 27 valid public synthetic vectors, 13 invalid cases, one acquisition-policy case, and downstream wallet verification fields |
 | Upstream compatibility | Complete at public source/WASM level | Pinned generated WASM SHA-256 `8a29007c...d1ec` matches 108 canonicalized `Secret` derivations |
 | Independent wallet verification | Complete for committed vectors | `mnemonic` 0.21 agrees on all 27 BIP39 seeds; Scure 2.3.0 and `bip-utils` 2.12.1 agree on all 27 seeds, master fingerprints, and BIP84 addresses; the official BIP84 control vector matches |
-| Phase 1 package provenance | Complete with deferred blocker | Public source/blob/workflow provenance is recorded; exact locked-package tarball equivalence is unverified and remains a Phase 2/release gate |
+| Phase 1 package provenance | Complete with explicit historical limit | Public source/blob/workflow provenance is recorded; exact seeded-crypto locked-package tarball equivalence remains unverified and is not claimed |
 | Reversible codec disposition | Complete | Retain internally, use explicit legacy/experimental naming with deprecated aliases later, preserve decoder/vectors, never expose as wallet recovery |
 | Phase 1 independent review | Approved | Fresh-eyes read-only reviewer authored no files, independently reimplemented the specification, reproduced all 27 vectors and 108 rotations, and reported no unresolved findings |
+| Phase 2 dependency/source audit | Complete | All 1,073 public npm tarballs match their lock SRIs; four private packages are mapped to pinned public source; native downloads, generated WASM, licenses, and desktop pipelines are inventoried |
+| Supported build runtime | Complete | Node 22.23.2 and npm 10.9.8 are selected and locally verified; Node 20 is end-of-life |
+| Source-built replacement proof | Complete in disposable clone | Credential-free local packages pass common/web typecheck, all 13 Jest suites and 1,696 tests, web production build, Electron renderer build, Electron TypeScript build, and unsigned macOS arm64 packaging |
+| Phase 2 implementation | Complete and independently reviewed | The three root commands, pinned public-source recipes, frozen local-package locks, normalized SBOM/provenance/checksums, unsigned packaging, and evidence-only CI contract passed with no unresolved review finding |
+| Credential-free clean-machine proof | Complete | A new Linux/amd64 container with Node 22.23.2/npm 10.9.8 completed empty-cache bootstrap, all checks, and an unsigned build without private package credentials |
+| Network-denied cache replay | Complete | A separate Docker run with `--network none` had no default route, returned `ENETUNREACH` for direct HTTPS, and passed offline bootstrap/check/build; all 14 checksum-bound evidence files matched the online run |
 | Feature code | Not started | Intentionally gated |
 
 ## Gate summary
 
 - Phase 0: passed with the credential-free dependency/build blocker documented, not repaired.
 - Phase 1: passed independent review with no unresolved findings.
+- Phase 2: passed. Credential-free empty-cache acquisition, full verification, unsigned evaluation packaging, deterministic evidence, and operating-system-denied offline replay all passed independent review with no unresolved finding.
 - Later phases: not started.
 
 ## Known blockers
 
-- The checked-in npm configuration and lockfile resolve DiceKeys packages through GitHub Packages. The credential-free clean install fails and must be remediated only in Phase 2.
-- The exact `@dicekeys/seeded-crypto-js@0.3.0` tarball cannot be acquired anonymously. Its lockfile SRI has not been matched to the pinned public source/WASM blob; Phase 2 and release remain blocked on an authorized comparison or an upstream anonymously downloadable provenance artifact.
+- Phase 2 no longer resolves DiceKeys packages through GitHub Packages. The committed locks identify separately built local artifacts from pinned public source; this is an explicit provenance break, and historical package equality is not claimed except where separately reconstructed and recorded.
+- The repository and scanner reserve all rights despite package-level MIT claims. Public redistribution remains blocked pending an unambiguous license grant and corrected notices.
+- Seeded and scanner generated WASM build environments are not fully pinned or reproducible; scanner CMake also embeds a developer-local OpenCV path.
+- `keytar@7.9.0` is archived and its prebuild installer does not content-verify downloaded native archives. Electron 29 is unsupported. Both must be replaced, upgraded, or brought under verified source-build control before release.
+- Current Electron entitlements and signed/notarized packaging are not wallet-release ready. Phase 2 artifacts are local, unsigned, and explicitly `releaseEligible: false`.

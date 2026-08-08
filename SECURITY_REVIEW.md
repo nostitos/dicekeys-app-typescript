@@ -1,6 +1,6 @@
 # Security Review
 
-Status: Phase 1 compatibility review complete; application adversarial review not started
+Status: Phase 1 compatibility review complete; Phase 2 build/supply-chain review complete; application adversarial review not started
 Last updated: 2026-08-08
 
 No item in this file is an approval of the current application for wallet recovery.
@@ -19,9 +19,43 @@ An independent read-only reviewer who authored no candidate files approved the f
 
 The review confirmed that the specification's two keyed BLAKE2b-256 calls match the pinned seeded-crypto source and are not RFC 5869 HMAC-HKDF. Scure 2.3.0 and `bip-utils` 2.12.1 independently agreed on the downstream wallet fields; `mnemonic` 0.21 independently agreed on the BIP39 seeds.
 
-The exact GitHub Package tarball remains unavailable for SRI-to-public-blob comparison. `lockedPackageTarballIntegrityVerified` therefore remains false. This is an unresolved Phase 2 build/supply-chain and release blocker; no byte-equivalence claim is made.
+The exact seeded-crypto GitHub Package tarball remains unavailable for SRI-to-public-blob comparison. `lockedPackageTarballIntegrityVerified` therefore remains false and no byte-equivalence claim is made. Phase 2 uses a separately identified source-built replacement instead of depending on that historical artifact; see D-013.
 
 The approved Phase 1 scope changes only specification, vector, reference, and coordination artifacts. It changes no application, scanner, React, Electron, or wallet API behavior. All Phase 0 application findings below therefore remain open.
+
+## Phase 2 supply-chain review
+
+An independent read-only audit completed before the build implementation began. It recomputed SHA-512 over all 1,073 unique public npm tarballs referenced by the four lockfiles: 202,535,396 bytes were streamed with zero integrity mismatches. All 1,850 non-root lock occurrences have SHA-512 integrity metadata. The only inaccessible artifacts are the four DiceKeys GitHub Packages, each of which returns HTTP 401 without credentials.
+
+The audit mapped those packages to exact public source commits and confirmed that a credential-free source-built replacement path is technically viable. The helper and scanner historical tarball bytes can be reconstructed from public source with compatible legacy packaging tools; API and seeded-crypto historical tarball equality is unverified. The pinned public seeded generated module still matches every Phase 1 compatibility vector. These facts support D-013 but do not make the application distributable.
+
+Release-blocking findings:
+
+| ID | Severity | Observation | Required disposition |
+| --- | --- | --- | --- |
+| SUPPLY-LICENSE-001 | Critical | The tracked repository/scanner license reserves all rights while package manifests claim MIT; the scanner package itself is `UNLICENSED`. | Obtain an unambiguous redistribution grant and correct repository/package notices before public artifacts. |
+| SUPPLY-WASM-001 | Critical | Seeded and scanner JavaScript contain generated embedded WASM, but their Emscripten/native build environments are not fully pinned; the scanner build also contains a developer-local Windows OpenCV path. | Create portable content-pinned rebuilds and compare generated hashes before release. |
+| SUPPLY-NATIVE-001 | High | Archived `keytar@7.9.0` uses `prebuild-install`, whose downloaded native archives are not content-verified by the package install path. | Replace keytar or explicitly acquire/build and verify each native input before installation. |
+| SUPPLY-RUNTIME-001 | High | Electron 29 is outside Electron's supported latest-three-major policy. | Upgrade Electron and re-run application/security verification before release. |
+| ELECTRON-SIGN-001 | High | The upstream notarization hook catches failures and the checked-in builder configuration embeds organization-specific signing selectors. | Keep Phase 2 explicitly unsigned; later signed configuration must take credentials only from protected environment state and fail closed. |
+| ELECTRON-ENTITLE-001 | High | Current entitlements allow debugger access, DYLD variables, unsigned executable memory, and disabled library validation. | Remove each permission or document a narrow necessity before wallet release. |
+
+The Phase 2 build may emit only local unsigned evaluation artifacts with `releaseEligible: false`. A successful bootstrap, test run, SBOM, or unsigned bundle is not a security approval or distribution license.
+
+## Phase 2 build-contract verification
+
+A fresh independent reviewer approved the final Phase 2 build contract with no unresolved critical, high, medium, or low finding. The review covered credential and Git-environment isolation, clean-source provenance, public-source package authentication, native-input acquisition, offline authority, destructive-path safety, deterministic archives and evidence, unsigned-package inspection, CI redistribution boundaries, and Windows/macOS/Linux portability.
+
+The acceptance run used a clean Linux/amd64 container with Node 22.23.2 and npm 10.9.8. Starting with an empty project cache, it completed credential-free bootstrap, the complete check suite, and the unsigned build. A second container invocation used Docker `--network none`; it had no default route and a direct Node HTTPS probe failed with `ENETUNREACH`. In that network namespace:
+
+- `./scripts/bootstrap --offline`, `./scripts/check`, and `./scripts/build-release --offline` all exited successfully;
+- all 13 Jest suites and 1,696 tests passed with no skipped or todo tests;
+- unsigned-package assertions and the complete 14-file checksum manifest passed;
+- online and replay checksum-bound evidence matched;
+- provenance recorded `dirty=false`, `releaseEligible=false`, and `acquisitionMode=cache-enforced-replay`; and
+- application/vendor lockfiles and the acquired npm cache contained no `npm.pkg.github.com` resolution.
+
+CI performs cross-platform cache replay with fail-fast proxy sentinels and uploads evidence JSON/SBOM/checksum files only. It does not upload the web or desktop bundles while redistribution rights remain unresolved, and it does not claim that proxy settings are operating-system-level network isolation. The Docker network-namespace run above is the Phase 2 network-denial evidence.
 
 ## Phase 0 observations
 
@@ -47,6 +81,6 @@ The approved Phase 1 scope changes only specification, vector, reference, and co
 - URL/history/storage/console/test-snapshot searches for secret material in built artifacts and runtime flows.
 - Network capture during scan, derivation, display, verification, and clear.
 - Electron permission, navigation, external-protocol, shell, camera, signing, and fuse verification on packaged artifacts.
-- Dependency install-script review, licenses, WASM provenance/hash, SBOM, and isolated release build.
+- Release-grade resolution of the recorded license, generated-WASM, keytar, Electron, entitlement, and signing blockers.
 - Secret-object deletion, unnecessary string-copy review, cache eviction, and honest limitations of JavaScript erasure.
 - Independent review after implementation, with no self-approval.
