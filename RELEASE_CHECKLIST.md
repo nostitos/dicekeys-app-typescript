@@ -5,14 +5,14 @@ Last updated: 2026-08-08
 
 ## Compatibility and recovery
 
-- [ ] All four physical rotations produce exactly the same 24 words.
-- [ ] Existing upstream `{"purpose":"wallet"}` outputs remain unchanged.
-- [ ] TypeScript, audited upstream WASM, and independent Python agree on every vector.
-- [ ] At least 20 public synthetic vectors cover required edge cases.
-- [ ] A second BIP39 library validates every mnemonic.
-- [ ] Two independent wallet libraries agree on BIP32 fingerprints and BIP84 addresses.
+- [x] All four physical rotations produce exactly the same 24 words.
+- [x] Existing upstream `{"purpose":"wallet"}` outputs remain unchanged at the pinned public source/WASM compatibility target.
+- [x] TypeScript, audited upstream WASM, and independent Python agree on every vector.
+- [x] At least 20 public synthetic vectors cover required edge cases (27 committed).
+- [x] A second BIP39 library validates every mnemonic.
+- [x] Two independent wallet libraries agree on BIP32 fingerprints and BIP84 addresses.
 - [ ] Test-mode hardware-wallet acceptance is complete without real funds.
-- [ ] A future developer can recover words using the published specification alone.
+- [x] An independent reviewer reproduced the words using the published specification alone.
 
 ## Build and supply chain
 

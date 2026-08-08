@@ -1,9 +1,27 @@
 # Security Review
 
-Status: Phase 0 observations only; formal adversarial review not started
+Status: Phase 1 compatibility review complete; application adversarial review not started
 Last updated: 2026-08-08
 
 No item in this file is an approval of the current application for wallet recovery.
+
+## Phase 1 compatibility review
+
+An independent read-only reviewer who authored no candidate files approved the frozen profile on 2026-08-08 with no unresolved critical, high, medium, or low conformance finding. The review independently reimplemented the normative specification and reproduced:
+
+- all 27 valid synthetic vectors and all 108 physical-rotation derivations;
+- all 13 fail-closed validation cases and their error precedence;
+- the leading-zero search fixture;
+- every BIP39 mnemonic and empty-passphrase seed;
+- every BIP32 master fingerprint and BIP84 first-receive address;
+- the official BIP84 control vector; and
+- the pinned public upstream WASM outputs for the exact wallet recipe.
+
+The review confirmed that the specification's two keyed BLAKE2b-256 calls match the pinned seeded-crypto source and are not RFC 5869 HMAC-HKDF. Scure 2.3.0 and `bip-utils` 2.12.1 independently agreed on the downstream wallet fields; `mnemonic` 0.21 independently agreed on the BIP39 seeds.
+
+The exact GitHub Package tarball remains unavailable for SRI-to-public-blob comparison. `lockedPackageTarballIntegrityVerified` therefore remains false. This is an unresolved Phase 2 build/supply-chain and release blocker; no byte-equivalence claim is made.
+
+The approved Phase 1 scope changes only specification, vector, reference, and coordination artifacts. It changes no application, scanner, React, Electron, or wallet API behavior. All Phase 0 application findings below therefore remain open.
 
 ## Phase 0 observations
 

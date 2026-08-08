@@ -1,21 +1,353 @@
 {
+  "schema": "DK-BIP39-24-v1-test-vectors",
+  "schemaVersion": 1,
+  "status": "phase1-review-candidate",
   "profile": "DK-BIP39-24-v1",
-  "status": "phase0-baseline-not-yet-phase1-approved",
-  "auditedApplicationCommit": "4eac9aa7248d40891b2d77527c4c1db39e3c9285",
-  "seededCryptoPackage": "@dicekeys/seeded-crypto-js@0.3.0",
-  "seededCryptoPackageSourceCommit": "6abb040989f4ad0dce5026e08407425ff57a401e",
-  "generatedWasmJavaScriptBlobSha": "a2e1b576c3ff15f665fd7adf9035ea092e0ba938",
-  "generatedWasmJavaScriptSha256": "8a29007c11ebd0a0e8793089c6aa480633474d0336a41f0f4b248ef385b6d1ec",
-  "seededCryptoSourceCommit": "8e1d1965c1720b8964e3ee1880163f7a6b221781",
-  "lockedPackageTarballIntegrityVerified": false,
-  "recipe": "{\"purpose\":\"wallet\"}",
-  "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
-  "notes": [
-    "These five public synthetic vectors preserve the Phase 0 upstream baseline.",
-    "They were checked against the generated upstream 0.3.0 WASM source blob and a temporary independent Python calculation.",
-    "The authenticated GitHub Package tarball could not be acquired in Phase 0, so its lockfile integrity hash has not yet been compared with the public generated-source blob.",
-    "They do not satisfy the Phase 1 requirement for at least 20 reviewed vectors or the still-null wallet-level fields."
+  "validVectorIdsInOrder": [
+    "V01",
+    "V02",
+    "V03",
+    "V04",
+    "V05",
+    "V06",
+    "V07",
+    "V08",
+    "V09",
+    "V10",
+    "V11",
+    "V12",
+    "V13",
+    "V14",
+    "V15",
+    "V16",
+    "V17",
+    "V18",
+    "V19",
+    "V20",
+    "V21",
+    "V22",
+    "V23",
+    "V24",
+    "V25",
+    "V26",
+    "V27"
   ],
+  "validVectorFieldOrder": [
+    "profile",
+    "diceKeyHumanReadableForm",
+    "allFourRotations",
+    "canonicalSeedString",
+    "recipeUtf8Hex",
+    "derivedEntropyHex",
+    "mnemonic",
+    "bip39SeedWithEmptyPassphraseHex",
+    "bip32MasterFingerprint",
+    "bip84FirstReceiveAddress"
+  ],
+  "provenance": {
+    "auditedApplicationCommit": "4eac9aa7248d40891b2d77527c4c1db39e3c9285",
+    "seededCryptoPackage": "@dicekeys/seeded-crypto-js@0.3.0",
+    "seededCryptoPackageSourceCommit": "6abb040989f4ad0dce5026e08407425ff57a401e",
+    "generatedWasmJavaScriptBlobSha": "a2e1b576c3ff15f665fd7adf9035ea092e0ba938",
+    "generatedWasmJavaScriptSha256": "8a29007c11ebd0a0e8793089c6aa480633474d0336a41f0f4b248ef385b6d1ec",
+    "seededCryptoSourceCommit": "8e1d1965c1720b8964e3ee1880163f7a6b221781",
+    "lockedPackageTarballIntegrityVerified": false,
+    "bip39EnglishWordList": {
+      "entryCount": 2048,
+      "lfTerminatedAsciiByteLength": 13116,
+      "lfTerminatedAsciiSha256": "2f5eed53a4727b4bf8880d8f3f199efc90e58503646d9ff8eff3a2ed3b24dbda",
+      "pinnedBitcoinBipsCommit": "ed4ffcb6a48d4dc4fdfc11cdba783c233db8c66e",
+      "pinnedBitcoinBipsPath": "bip-0039/english.txt",
+      "pinnedGitBlobSha1": "942040ed50f7205cafc465496229128ba4f78e75",
+      "auditedApplicationSourcePath": "web/src/formats/bip39/word-lists/english.ts"
+    },
+    "validInputSources": {
+      "V01-V20": {
+        "kind": "public-upstream-synthetic-fixtures",
+        "sourcePath": "web/src/tests/TestDiceKeysInHumanReadableForm.ts",
+        "oneBasedSourceIndexes": "1-20"
+      },
+      "V21": {
+        "kind": "deterministic-special-case",
+        "purpose": "adjacent lexicographic corner letters D,C,B,A"
+      },
+      "V22": {
+        "kind": "deterministic-special-case",
+        "purpose": "global A is interior while corners are Z,Y,X,W"
+      },
+      "V23-V24": {
+        "kind": "deterministic-sensitivity-pair",
+        "onlyDifference": "zero-based face 12 changes M1t to M6t"
+      },
+      "V25-V26": {
+        "kind": "deterministic-sensitivity-pair",
+        "onlyDifference": "zero-based face 7 changes O2b to O2t"
+      },
+      "V27": {
+        "kind": "deterministic-leading-zero-search",
+        "counterEncoding": "counter encoded as 25 base-6 digits, most significant at face 0; displayed digit is base-6 digit plus 1",
+        "fixedLetters": "ABCDEFGHIJKLMNOPRSTUVWXYZ",
+        "orientationAtZeroBasedFaceI": "trbl[(3*i+2)%4]",
+        "searchStartInclusive": 0,
+        "firstMatchingCounter": 138,
+        "predicate": "derivedEntropyHex starts with 00"
+      }
+    },
+    "independentVerification": [
+      {
+        "implementation": "upstream generated seeded-crypto WASM",
+        "sourceCommit": "6abb040989f4ad0dce5026e08407425ff57a401e",
+        "runtime": "Node.js v20.19.5",
+        "scope": "all 27 vectors and all four physical rotations; 108 Secret derivations"
+      },
+      {
+        "implementation": "independent Python standard-library verifier",
+        "runtime": "Python 3.14.2 with OpenSSL 3.6.3 9 Jun 2026",
+        "algorithms": "hashlib keyed BLAKE2b-256, SHA-256, PBKDF2-HMAC-SHA512, pure-integer secp256k1/BIP32, HASH160, and Bech32",
+        "scope": "all requested fields for all 27 vectors"
+      },
+      {
+        "implementation": "independent Node.js wallet verifier",
+        "runtime": "Node.js v20.19.5 with bundled OpenSSL 3.0.16",
+        "algorithms": "node:crypto PBKDF2/HMAC/hash and createECDH(secp256k1), independently implemented BIP32 and Bech32",
+        "scope": "BIP39 seed, master key fingerprint, and BIP84 address for all 27 vectors"
+      }
+    ],
+    "walletVerifierKnownVector": {
+      "source": "BIP84 test vector",
+      "mnemonic": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
+      "bip39SeedWithEmptyPassphraseHex": "5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4",
+      "bip32MasterFingerprint": "73c5da0a",
+      "bip84FirstReceiveAddress": "bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu"
+    }
+  },
+  "generation": {
+    "recipeUtf8Text": "{\"purpose\":\"wallet\"}",
+    "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+    "allFourRotationsOrder": [
+      "presented view / 0 degrees",
+      "90 degrees clockwise",
+      "180 degrees clockwise",
+      "270 degrees clockwise"
+    ],
+    "bip39Language": "English",
+    "bip39PassphraseForWalletVerification": "",
+    "bip32MasterFingerprintDefinition": "first four bytes of HASH160(compressed BIP32 master public key), not the serialized root parent fingerprint 00000000",
+    "bip84Network": "Bitcoin mainnet",
+    "bip84FirstReceivePath": "m/84'/0'/0'/0/0",
+    "validVectorCount": 27,
+    "physicalRotationDerivationCount": 108,
+    "hashes": {
+      "validVectorInputsSha256": "8ed6557e38860fa0ac5dd3d0cea7b4acb8237b7ce8f781cf357e963e3ce50a4c",
+      "validVectorInputsEncoding": "<Vnn>=<diceKeyHumanReadableForm>, ordered V01-V27, joined by LF, no trailing LF",
+      "validVectorRecordsTsvSha256": "24764210bdd9957f8bd21610e55c538aaa6db339c500d5395a4879216ec45ec6",
+      "validVectorRecordsTsvColumns": [
+        "vectorId",
+        "diceKeyHumanReadableForm",
+        "rotation0",
+        "rotation90Clockwise",
+        "rotation180Clockwise",
+        "rotation270Clockwise",
+        "canonicalSeedString",
+        "recipeUtf8Hex",
+        "derivedEntropyHex",
+        "mnemonic",
+        "bip39SeedWithEmptyPassphraseHex",
+        "bip32MasterFingerprint",
+        "bip84FirstReceiveAddress"
+      ],
+      "validVectorRecordsTsvEncoding": "TAB-delimited columns, ordered V01-V27, records joined by LF, no trailing LF",
+      "vectorsCanonicalJsonSha256": "8ef67edf7ad936105da22e773002a495b387376fff5a98a30691861e4179f5fb",
+      "vectorsCanonicalJsonEncoding": "UTF-8 JSON, ensure_ascii=false, separators comma and colon, field insertion order equal to validVectorFieldOrder",
+      "invalidCasesCanonicalJsonSha256": "6bd5685ed7f08ea4bfd7800103bb5016a572a8f6c333e7f62ae2ac6913a521a5",
+      "invalidCasesCanonicalJsonEncoding": "UTF-8 JSON, ensure_ascii=false, separators comma and colon, field insertion order as stored"
+    }
+  },
+  "coverage": {
+    "normalPublicUpstreamSyntheticFixtures": [
+      "V01",
+      "V02",
+      "V03",
+      "V04",
+      "V05",
+      "V06",
+      "V07",
+      "V08",
+      "V09",
+      "V10",
+      "V11",
+      "V12",
+      "V13",
+      "V14",
+      "V15",
+      "V16",
+      "V17",
+      "V18",
+      "V19",
+      "V20"
+    ],
+    "phase0CompatibilityAnchors": [
+      "V01",
+      "V02",
+      "V03",
+      "V04",
+      "V05"
+    ],
+    "centerOrientations": {
+      "t": [
+        "V01",
+        "V03",
+        "V05",
+        "V08",
+        "V12",
+        "V13",
+        "V16",
+        "V19",
+        "V21",
+        "V23",
+        "V24"
+      ],
+      "r": [
+        "V02",
+        "V10",
+        "V25",
+        "V26"
+      ],
+      "b": [
+        "V04",
+        "V07",
+        "V09",
+        "V17",
+        "V18",
+        "V20",
+        "V27"
+      ],
+      "l": [
+        "V06",
+        "V11",
+        "V14",
+        "V15",
+        "V22"
+      ]
+    },
+    "distinctCenterLetters": [
+      "A",
+      "C",
+      "D",
+      "F",
+      "G",
+      "M",
+      "O",
+      "P",
+      "U",
+      "W",
+      "X",
+      "Y"
+    ],
+    "canonicalRotationIndexes": {
+      "0": [
+        "V07",
+        "V08",
+        "V13",
+        "V15",
+        "V23",
+        "V24",
+        "V27"
+      ],
+      "1": [
+        "V03",
+        "V12",
+        "V14",
+        "V25",
+        "V26"
+      ],
+      "2": [
+        "V02",
+        "V06",
+        "V11",
+        "V17",
+        "V18",
+        "V21",
+        "V22"
+      ],
+      "3": [
+        "V01",
+        "V04",
+        "V05",
+        "V09",
+        "V10",
+        "V16",
+        "V19",
+        "V20"
+      ]
+    },
+    "initialViewIsNotCanonical": [
+      "V01",
+      "V02",
+      "V03",
+      "V04",
+      "V05",
+      "V06",
+      "V09",
+      "V10",
+      "V11",
+      "V12",
+      "V14",
+      "V16",
+      "V17",
+      "V18",
+      "V19",
+      "V20",
+      "V21",
+      "V22",
+      "V25",
+      "V26"
+    ],
+    "lexicographicCornerCases": [
+      "V21",
+      "V22"
+    ],
+    "singleFaceDigitSensitivityPair": [
+      "V23",
+      "V24"
+    ],
+    "singleFaceOrientationSensitivityPair": [
+      "V25",
+      "V26"
+    ],
+    "leadingZeroDerivedEntropy": [
+      "V27"
+    ],
+    "allFourPhysicalRotationsInvariant": [
+      "V01",
+      "V02",
+      "V03",
+      "V04",
+      "V05",
+      "V06",
+      "V07",
+      "V08",
+      "V09",
+      "V10",
+      "V11",
+      "V12",
+      "V13",
+      "V14",
+      "V15",
+      "V16",
+      "V17",
+      "V18",
+      "V19",
+      "V20",
+      "V21",
+      "V22",
+      "V23",
+      "V24",
+      "V25",
+      "V26",
+      "V27"
+    ]
+  },
   "vectors": [
     {
       "profile": "DK-BIP39-24-v1",
@@ -30,14 +362,9 @@
       "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
       "derivedEntropyHex": "4f2ffae92b02020369c5c21106e48cb838d72886df4ca03ed107f4cac3e46631",
       "mnemonic": "execute lemon ripple figure cage accuse poem reunion baby damp case idea miracle nephew bread trumpet parent walk draft trumpet promote vendor occur deliver",
-      "bip39SeedWithEmptyPassphraseHex": null,
-      "bip32MasterFingerprint": null,
-      "bip84FirstReceiveAddress": null,
-      "verification": {
-        "allFourRotationsMatch": true,
-        "upstreamWasm": true,
-        "independentPython": true
-      }
+      "bip39SeedWithEmptyPassphraseHex": "8638744120a03bbbbdfb7c3351e5ccade5300e65b3e56839d3aa9ea99d94734e70581f8b26d59e6baeecf91955a48d857b8223c52fe5194aba66bc6259323e57",
+      "bip32MasterFingerprint": "dc855998",
+      "bip84FirstReceiveAddress": "bc1qh02hmxse9tlm7xf5yzeq56s6kkvne5fzzq72g8"
     },
     {
       "profile": "DK-BIP39-24-v1",
@@ -52,14 +379,9 @@
       "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
       "derivedEntropyHex": "6332b21f2d8fb6e8582b33bc8db315a906388140e9003a997c052b446e145a3b",
       "mnemonic": "glimpse night march force window injury gaze grid route horn shell faith glory doll admit cactus dentist slogan access final eight any happy insect",
-      "bip39SeedWithEmptyPassphraseHex": null,
-      "bip32MasterFingerprint": null,
-      "bip84FirstReceiveAddress": null,
-      "verification": {
-        "allFourRotationsMatch": true,
-        "upstreamWasm": true,
-        "independentPython": true
-      }
+      "bip39SeedWithEmptyPassphraseHex": "f3a7a4a7c27f7fe6f2f018bd9003877544997771597084a7a411ff3f77e374b426e52edfa4c92782673042cd8b8b1926008eb4d7cc1b614b149d90e4da54a63b",
+      "bip32MasterFingerprint": "560caa66",
+      "bip84FirstReceiveAddress": "bc1q4ampz7qwlkm3eavc6uj63fm2lkewl3vryd56cp"
     },
     {
       "profile": "DK-BIP39-24-v1",
@@ -74,14 +396,9 @@
       "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
       "derivedEntropyHex": "2277ef937d7d3beec14ccd3391af09ad466cfb4081b23aec20410b4848f891ff",
       "mnemonic": "carbon satoshi tooth wife squirrel wash ahead often crime miracle second fold grocery laundry acoustic curve depend genre aware bird loyal labor elevator toe",
-      "bip39SeedWithEmptyPassphraseHex": null,
-      "bip32MasterFingerprint": null,
-      "bip84FirstReceiveAddress": null,
-      "verification": {
-        "allFourRotationsMatch": true,
-        "upstreamWasm": true,
-        "independentPython": true
-      }
+      "bip39SeedWithEmptyPassphraseHex": "772d485a6b741eb2c39d733e7189f6a0e35e9e70aa14fa6b8a4c7e3537fc1dc2eacdd74384e73ad0c1c571a53ea5c23808a32afcf32b97229bff920d15437487",
+      "bip32MasterFingerprint": "dc3859bd",
+      "bip84FirstReceiveAddress": "bc1qhhwmw8jdzxeh8yzru5834am2tuh2vg4e67t57w"
     },
     {
       "profile": "DK-BIP39-24-v1",
@@ -96,14 +413,9 @@
       "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
       "derivedEntropyHex": "65f498aaaa6df51db79fb7fdba2a80691c84e24031881af20312027944079e25",
       "mnemonic": "grass pill click feel tent mom taxi want world spend parade split sign illness absorb country brain mosquito setup agent nephew adult joy same",
-      "bip39SeedWithEmptyPassphraseHex": null,
-      "bip32MasterFingerprint": null,
-      "bip84FirstReceiveAddress": null,
-      "verification": {
-        "allFourRotationsMatch": true,
-        "upstreamWasm": true,
-        "independentPython": true
-      }
+      "bip39SeedWithEmptyPassphraseHex": "68797a02c49ee6a78f6db0588235eb930e9fa6f3753496f6dc34f63d3f38289bc0956642f050746c8900dbe01033e0042ceb9b895c4c3284f1cb8ce4b60f61d8",
+      "bip32MasterFingerprint": "876223fa",
+      "bip84FirstReceiveAddress": "bc1qkc2a3cnd3d74wdjfunf3mz49yxmqsjnmw6xzpa"
     },
     {
       "profile": "DK-BIP39-24-v1",
@@ -118,14 +430,550 @@
       "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
       "derivedEntropyHex": "c8373a5f8378261b48f81f395288bccab1a65f66b1e58e480ed514d8d64c720c",
       "mnemonic": "sight right obey alone list asset catalog advance deer nephew connect nice bounce cook onion device mixture document relief claim miracle change sight paper",
-      "bip39SeedWithEmptyPassphraseHex": null,
-      "bip32MasterFingerprint": null,
-      "bip84FirstReceiveAddress": null,
-      "verification": {
-        "allFourRotationsMatch": true,
-        "upstreamWasm": true,
-        "independentPython": true
+      "bip39SeedWithEmptyPassphraseHex": "7d0d341f48614c8f6316638705671b83c79b821d35eea2923fef41f0fa2a775a8688fdbd489d1ea921cd35f2bcdd74b4e3de8545af7263552e0130a84e46257c",
+      "bip32MasterFingerprint": "9e939487",
+      "bip84FirstReceiveAddress": "bc1q86lhwxhsm0jqwa3zg93tmgrnsr6p22xdl3y5qs"
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "J5rP3tE6lS5rL5lF5bK1lC5rZ4lR6rH4rA2rY1lG6tU1tT3tO3bB2lW6tM3lV1tN5bX3rI3tD6r",
+      "allFourRotations": [
+        "J5rP3tE6lS5rL5lF5bK1lC5rZ4lR6rH4rA2rY1lG6tU1tT3tO3bB2lW6tM3lV1tN5bX3rI3tD6r",
+        "V1rT3rH4bF5lJ5bN5lO3lA2bK1tP3rX3bB2tY1tC5bE6tI3rW6rG6rZ4tS5bD6bM3tU1rR6bL5t",
+        "D6lI3bX3lN5tV1bM3rW6bB2rO3tT3bU1bG6bY1rA2lH4lR6lZ4rC5lK1rF5tL5rS5lE6rP3bJ5l",
+        "L5bR6tU1lM3bD6tS5tZ4bG6lW6lI3lE6bC5tY1bB2bX3tP3lK1bA2tO3rN5rJ5tF5rH4tT3lV1l"
+      ],
+      "canonicalSeedString": "D6lI3bX3lN5tV1bM3rW6bB2rO3tT3bU1bG6bY1rA2lH4lR6lZ4rC5lK1rF5tL5rS5lE6rP3bJ5l",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "de8c4d8198864d9d8516ece56e4a64bcd0a738a540ff1e4dff83d18c1ba94082",
+      "mnemonic": "teach give gather country gospel solution begin talk tornado inch odor keen apology ordinary never cable bundle husband thought perfect script start acoustic fog",
+      "bip39SeedWithEmptyPassphraseHex": "00ac97833f85e6bf028d128a05378da6a561974fd556421049de2e5b686bd6e704d33d05a7e2a7912ac0fc2eb3e1af5ee1ffc98bb05fdf791dfa994fab23b449",
+      "bip32MasterFingerprint": "cffd172a",
+      "bip84FirstReceiveAddress": "bc1q2t8asz8t0ajpayrwpq4q63vg0jgcs9ga0vwwv0"
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "A3bI1tM5lC1bH1rO3rJ1tY1rB4bF2bP2bN6rW4bU1bG5rV4lZ6tL4tE6lX2rR4lT1tS4bD4tK4r",
+      "allFourRotations": [
+        "A3bI1tM5lC1bH1rO3rJ1tY1rB4bF2bP2bN6rW4bU1bG5rV4lZ6tL4tE6lX2rR4lT1tS4bD4tK4r",
+        "R4tV4tP2lO3bA3lT1rZ6rN6bJ1rI1rS4lL4rW4lY1bM5tD4rE6tU1lB4lC1lK4bX2bG5bF2lH1b",
+        "K4lD4bS4tT1bR4rX2lE6rL4bZ6bV4rG5lU1tW4tN6lP2tF2tB4tY1lJ1bO3lH1lC1tM5rI1bA3t",
+        "H1tF2rG5tX2tK4tC1rB4rU1rE6bD4lM5bY1tW4rL4lS4rI1lJ1lN6tZ6lT1lA3rO3tP2rV4bR4b"
+      ],
+      "canonicalSeedString": "A3bI1tM5lC1bH1rO3rJ1tY1rB4bF2bP2bN6rW4bU1bG5rV4lZ6tL4tE6lX2rR4lT1tS4bD4tK4r",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "f66b94ea17de81035bb36d171153d37f7ab16152502833acccfd99a655711e07",
+      "mnemonic": "wait frequent dentist cook trend like human horror blade melody visit year prison radar enable agree crisp grid disorder crew grab review job tube",
+      "bip39SeedWithEmptyPassphraseHex": "6a316506e4834062cc167ddea6fa40757e6c95c53d547d0d2850d74ce730684d87a4f9accf0463a1a67a1fe4aaa0669e1efb99df9644e982dcb0ad57146ac058",
+      "bip32MasterFingerprint": "0c9cf427",
+      "bip84FirstReceiveAddress": "bc1qye4z7gq9au0hr2c7m7evpkxe5jkqnzs6w2unrl"
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "K2bE3bF4lH1lZ6bX2tW5tN3bD2bU6bI2lA3tO3tM4lT1bG6lB2tC2rV4rS6rR3bL3bY2tJ4rP5b",
+      "allFourRotations": [
+        "K2bE3bF4lH1lZ6bX2tW5tN3bD2bU6bI2lA3tO3tM4lT1bG6lB2tC2rV4rS6rR3bL3bY2tJ4rP5b",
+        "R3lG6tI2tX2rK2lL3lB2rA3rW5rE3lY2rC2bO3rN3lF4tJ4bV4bM4tD2lH1tP5lS6bT1lU6lZ6l",
+        "P5tJ4lY2bL3tR3tS6lV4lC2lB2bG6rT1tM4rO3bA3bI2rU6tD2tN3tW5bX2bZ6tH1rF4rE3tK2t",
+        "Z6rU6rT1rS6tP5rH1bD2rM4bV4tJ4tF4bN3rO3lC2tY2lE3rW5lA3lB2lL3rK2rX2lI2bG6bR3r"
+      ],
+      "canonicalSeedString": "K2bE3bF4lH1lZ6bX2tW5tN3bD2bU6bI2lA3tO3tM4lT1bG6lB2tC2rV4rS6rR3bL3bY2tJ4rP5b",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "a5a9491a1d4aefcde529fb5205cfb5b816440deca5b53d4136f6c7015f500b51",
+      "mnemonic": "pizza engage educate dentist puzzle tragic net disorder faith common uniform ice gold alone raw repeat diary answer sad mix bicycle pool coil certain",
+      "bip39SeedWithEmptyPassphraseHex": "4dd0b77bf252cf148823fdbfef3b8979103e817afaa655b510650fd504cd5985116f921d35c31d22f3024102fb3bdc373248070ff215ae4892b14acf6154cd76",
+      "bip32MasterFingerprint": "cc69d32c",
+      "bip84FirstReceiveAddress": "bc1qzacz8xwaasc7vj2ddn5l82c3qrpnncr4wczdnq"
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "X5tF2tE2lL1rJ4bB4lH6rD1bO1lI2lK3tY5lC6bA1bU2bR1bS6tV3lN2tP4bT5lM4tG3bZ2lW1l",
+      "allFourRotations": [
+        "X5tF2tE2lL1rJ4bB4lH6rD1bO1lI2lK3tY5lC6bA1bU2bR1bS6tV3lN2tP4bT5lM4tG3bZ2lW1l",
+        "T5tR1lK3rB4tX5rM4rS6rY5tH6bF2rG3lV3tC6lD1lE2tZ2tN2rA1lO1tL1bW1tP4lU2lI2tJ4l",
+        "W1rZ2rG3tM4bT5rP4tN2bV3rS6bR1tU2tA1tC6tY5rK3bI2rO1rD1tH6lB4rJ4tL1lE2rF2bX5b",
+        "J4rI2bU2rP4rW1bL1tO1bA1rN2lZ2bE2bD1rC6rV3bG3rF2lH6tY5bS6lM4lX5lB4bK3lR1rT5b"
+      ],
+      "canonicalSeedString": "J4rI2bU2rP4rW1bL1tO1bA1rN2lZ2bE2bD1rC6rV3bG3rF2lH6tY5bS6lM4lX5lB4bK3lR1rT5b",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "49210b26cdae3dc1f16314b345e69d10b8c94065377e2da01c73a54268b2d508",
+      "mnemonic": "empty analyst situate opera toilet thought sheriff glad rebuild connect point cannon milk parent network used color abstract brother enhance charge floor feature brother",
+      "bip39SeedWithEmptyPassphraseHex": "5733590be4e3af01c6075d4a31781ca967935f95b95fc9893df11ef9874b87c4d3412a913592b90b4d93ea342895c549da1de053ac2907266cf39e845e317059",
+      "bip32MasterFingerprint": "236da3a7",
+      "bip84FirstReceiveAddress": "bc1qq4uus6vl05kykgcz32hzstsw5fdzg60rjtu4zm"
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "H4tO5bS3tW5bB6tZ3bP2tC3rA4bL4rE3tR2tF2rT3lN5bX4tY5tJ6bU2rI1rK6tV1rG6rM5lD6l",
+      "allFourRotations": [
+        "H4tO5bS3tW5bB6tZ3bP2tC3rA4bL4rE3tR2tF2rT3lN5bX4tY5tJ6bU2rI1rK6tV1rG6rM5lD6l",
+        "K6rX4rE3rZ3lH4rV1bY5rR2rP2rO5lG6bJ6lF2bC3bS3rM5tU2bT3tA4lW5lD6tI1bN5lL4bB6r",
+        "D6rM5rG6lV1lK6bI1lU2lJ6tY5bX4bN5tT3rF2lR2bE3bL4lA4tC3lP2bZ3tB6bW5tS3bO5tH4b",
+        "B6lL4tN5rI1tD6bW5rA4rT3bU2tM5bS3lC3tF2tJ6rG6tO5rP2lR2lY5lV1tH4lZ3rE3lX4lK6l"
+      ],
+      "canonicalSeedString": "B6lL4tN5rI1tD6bW5rA4rT3bU2tM5bS3lC3tF2tJ6rG6tO5rP2lR2lY5lV1tH4lZ3rE3lX4lK6l",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "2f473549d3191f039ad216b09b08ce0ac47efca2afc91d21288d5175a13b0177",
+      "mnemonic": "consider defy fame plate music limb hero drift rack success crime better elevator layer melt weird brush announce cash pepper foam outside alarm tower",
+      "bip39SeedWithEmptyPassphraseHex": "cef0181789a5815c2e800ca3252df4176cd113c0cf4ca65d4dddf7835b486a05c816b8dd52a9e16dec0a83c513198367c14edcc374254b5f44b5e96c56163664",
+      "bip32MasterFingerprint": "d84893fd",
+      "bip84FirstReceiveAddress": "bc1qnlwu7tr49aa2fvjmfujyys3g8d3ufdfkh565m2"
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "Y1bF3lO4bU4tL2bV1lS4rA6tR4rD6tB4lC5bX3lP3rH4bZ4lW6rN3lE3tI5lM6rK4tT2tJ1bG1r",
+      "allFourRotations": [
+        "Y1bF3lO4bU4tL2bV1lS4rA6tR4rD6tB4lC5bX3lP3rH4bZ4lW6rN3lE3tI5lM6rK4tT2tJ1bG1r",
+        "M6bZ4tB4tV1tY1lK4rW6bC5lS4bF3tT2rN3tX3tA6rO4lJ1lE3rP3bR4bU4rG1bI5tH4lD6rL2l",
+        "G1lJ1tT2bK4bM6lI5rE3bN3rW6lZ4rH4tP3lX3rC5tB4rD6bR4lA6bS4lV1rL2tU4bO4tF3rY1t",
+        "L2rD6lH4rI5bG1tU4lR4tP3tE3lJ1rO4rA6lX3bN3bT2lF3bS4tC5rW6tK4lY1rV1bB4bZ4bM6t"
+      ],
+      "canonicalSeedString": "G1lJ1tT2bK4bM6lI5rE3bN3rW6lZ4rH4tP3lX3rC5tB4rD6bR4lA6bS4lV1rL2tU4bO4tF3rY1t",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "eb23237a1b7b6e3fa505c3ff52f2a2122ccee22f8bd04bcf45646f75e458247c",
+      "mnemonic": "twenty boil teach dad report cabin neglect reveal young nurse possible cattle smooth illegal sail key envelope kick flip ten furnace clown music multiply",
+      "bip39SeedWithEmptyPassphraseHex": "184750dcd061b48a4812bf1c812bd02e4ac4f8f3a30a78027ed898f03fe42fd25e35c3283583712132a87095ae9b4407d064b5c4d3226bb04a22ebc92218b5c0",
+      "bip32MasterFingerprint": "4b8c49db",
+      "bip84FirstReceiveAddress": "bc1q8qdudmjjluel04s9207r0fz9k4uar56zeu6fl7"
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "O3rR2tF3bG3rP2tB5tT4bJ2tW4lV2bN6tI1lA3tY4rE5rX3tC2tS1tU4lL3bH6bD4lZ4lK4rM5t",
+      "allFourRotations": [
+        "O3rR2tF3bG3rP2tB5tT4bJ2tW4lV2bN6tI1lA3tY4rE5rX3tC2tS1tU4lL3bH6bD4lZ4lK4rM5t",
+        "H6lX3rN6rB5rO3bD4tC2rI1tT4lR2rZ4tS1rA3rJ2rF3lK4bU4tY4bW4tG3bM5rL3lE5bV2lP2r",
+        "M5bK4lZ4rD4rH6tL3tU4rS1bC2bX3bE5lY4lA3bI1rN6bV2tW4rJ2bT4tB5bP2bG3lF3tR2bO3l",
+        "P2lV2rE5tL3rM5lG3tW4bY4tU4bK4tF3rJ2lA3lS1lZ4bR2lT4rI1bC2lD4bO3tB5lN6lX3lH6r"
+      ],
+      "canonicalSeedString": "H6lX3rN6rB5rO3bD4tC2rI1tT4lR2rZ4tS1rA3rJ2rF3lK4bU4tY4bW4tG3bM5rL3lE5bV2lP2r",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "e5db4810efa61cdb8f90651105d47a7cba2fafb3132c838202b6bb10f2aad6bb",
+      "mnemonic": "total surge aerobic tent gift horse dinner arrow baby concert burden west pepper style slush grain logic avoid pumpkin involve august fever foot hire",
+      "bip39SeedWithEmptyPassphraseHex": "727721c2a6aa27ae203b55945597f43141d82274df68124dc2ca3c6600b9ea4a3e5007a3511fdb5522d199c649748bc9a0a66ced33ec494f5ee25926489560d3",
+      "bip32MasterFingerprint": "0e4666f5",
+      "bip84FirstReceiveAddress": "bc1qppxuqla2klmuc6vja430fjpmcjtca4ktyvccdn"
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "H2rY5rM5lJ5bS5rV4rK2bT2bF3lI4lP1lE2rD4tG6lW6bO2rU3lZ4tN2tB5bR5tX1lA6tC3bL2b",
+      "allFourRotations": [
+        "H2rY5rM5lJ5bS5rV4rK2bT2bF3lI4lP1lE2rD4tG6lW6bO2rU3lZ4tN2tB5bR5tX1lA6tC3bL2b",
+        "R5rO2bP1tV4bH2bX1tU3tE2bK2lY5bA6rZ4rD4rT2lM5tC3lN2rG6tF3tJ5lL2lB5lW6lI4tS5b",
+        "L2tC3tA6bX1rR5bB5tN2bZ4bU3rO2lW6tG6rD4bE2lP1rI4rF3rT2tK2tV4lS5lJ5tM5rY5lH2l",
+        "S5tI4bW6rB5rL2rJ5rF3bG6bN2lC3rM5bT2rD4lZ4lA6lY5tK2rE2tU3bX1bH2tV4tP1bO2tR5l"
+      ],
+      "canonicalSeedString": "H2rY5rM5lJ5bS5rV4rK2bT2bF3lI4lP1lE2rD4tG6lW6bO2rU3lZ4tN2tB5bR5tX1lA6tC3bL2b",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "143df2840d6842586eecb34726e0fd60af0bc7a7084728c8f8a6bade81189ff7",
+      "mnemonic": "before usage patient bracket loud club roof nose elbow damage dismiss scout vague toilet order angry churn elephant claim interest trend middle lemon van",
+      "bip39SeedWithEmptyPassphraseHex": "286d38e0f11442bb7d19f92e6c2b73ae8d5d3cf591b1cfeb7cbb111d7bbeb38f96c52f14731bc556d1bcf2798dd78a09f39a00b38de62c373d20fb34ee38ed52",
+      "bip32MasterFingerprint": "755ccdcd",
+      "bip84FirstReceiveAddress": "bc1q5gz0f0tmqzkhgkt4ld7sqzyrpme33qgx0g2en8"
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "U5tL3lG2lS5rK5lD3bM2lN5tR6lB2lH3bJ6tW4lZ4rY5lX1rT1bO6lA6lV4rC2rF5rP3rI3rE4t",
+      "allFourRotations": [
+        "U5tL3lG2lS5rK5lD3bM2lN5tR6lB2lH3bJ6tW4lZ4rY5lX1rT1bO6lA6lV4rC2rF5rP3rI3rE4t",
+        "C2bX1bH3lD3lU5rF5bT1lJ6rM2tL3tP3bO6tW4tN5rG2tI3bA6tZ4bR6tS5bE4rV4bY5tB2tK5t",
+        "E4bI3lP3lF5lC2lV4lA6rO6rT1tX1lY5rZ4lW4rJ6bH3tB2rR6rN5bM2rD3tK5rS5lG2rL3rU5b",
+        "K5bB2bY5bV4tE4lS5tR6bZ4tA6bI3tG2bN5lW4bO6bP3tL3bM2bJ6lT1rF5tU5lD3rH3rX1tC2t"
+      ],
+      "canonicalSeedString": "C2bX1bH3lD3lU5rF5bT1lJ6rM2tL3tP3bO6tW4tN5rG2tI3bA6tZ4bR6tS5bE4rV4bY5tB2tK5t",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "66de1f5eec12d2f366fa739c5a078bc5b34ddc37f64d62a0e3a212137bfc8501",
+      "mnemonic": "grocery valley stumble subway coffee keen orbit example ordinary south title merge crumble unlock thank situate glance alpha trigger category dash wrestle beef decade",
+      "bip39SeedWithEmptyPassphraseHex": "edf793cdf7223ed317fc737a9c827196db46e74c53bfd7eacac7897bcfb2bd6dde6dc54e115c5f659a889171d89006e43be9c159e09c2f3be530318554d29e89",
+      "bip32MasterFingerprint": "94168acc",
+      "bip84FirstReceiveAddress": "bc1qxd8e06d79r2tx8t8zn9rjtunu48a7fg65q8sj5"
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "F1tE2bX2tZ3lI1rT6lU4tJ5lP6tC4bV4tA6tG5lL6lW3lH5bB5lY5lO4rS1bK1tD6rM4rR3lN1l",
+      "allFourRotations": [
+        "F1tE2bX2tZ3lI1rT6lU4tJ5lP6tC4bV4tA6tG5lL6lW3lH5bB5lY5lO4rS1bK1tD6rM4rR3lN1l",
+        "K1rH5lV4rT6tF1rD6bB5tA6rU4rE2lM4bY5tG5tJ5tX2rR3tO4bL6tP6rZ3tN1tS1lW3tC4lI1b",
+        "N1rR3rM4lD6lK1bS1tO4lY5rB5rH5tW3rL6rG5rA6bV4bC4tP6bJ5rU4bT6rI1lZ3rX2bE2tF1b",
+        "I1tC4rW3bS1rN1bZ3bP6lL6bO4tR3bX2lJ5bG5bY5bM4tE2rU4lA6lB5bD6tF1lT6bV4lH5rK1l"
+      ],
+      "canonicalSeedString": "F1tE2bX2tZ3lI1rT6lU4tJ5lP6tC4bV4tA6tG5lL6lW3lH5bB5lY5lO4rS1bK1tD6rM4rR3lN1l",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "a0060629b561cde677efa2dbe58a7f9fdafcabb98a4e27d5e58bb4a09f9a041e",
+      "mnemonic": "parade coral media hello broom veteran text violin swim clump paper distance quit fiction tower endorse chief quality glass harsh antique snack away staff",
+      "bip39SeedWithEmptyPassphraseHex": "d38377780486becea446d78305e49c1a7386d7a10a9b4906e221a6239aa8b4c975384b505cb318162d9e9df2b2931614a2179aba02d0a1c9bdfef511e6e9be87",
+      "bip32MasterFingerprint": "5702dc91",
+      "bip84FirstReceiveAddress": "bc1q3rkha56g40vtn5angymkugv2f60m5p3gfzmh0h"
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "J2rX2bB3lM5bA3rV5lG2tC5tF1rL4bY5tO6bP3tU4tE1rI5rS4bZ1bD5lK3tT3lN6rH1tR5tW3r",
+      "allFourRotations": [
+        "J2rX2bB3lM5bA3rV5lG2tC5tF1rL4bY5tO6bP3tU4tE1rI5rS4bZ1bD5lK3tT3lN6rH1tR5tW3r",
+        "T3tI5bY5rV5tJ2bN6bS4lO6lG2rX2lH1rZ1lP3rC5rB3tR5rD5tU4rF1bM5lW3bK3rE1bL4lA3b",
+        "W3lR5bH1bN6lT3rK3bD5rZ1tS4tI5lE1lU4bP3bO6tY5bL4tF1lC5bG2bV5rA3lM5tB3rX2tJ2l",
+        "A3tL4rE1tK3lW3tM5rF1tU4lD5bR5lB3bC5lP3lZ1rH1lX2rG2lO6rS4rN6tJ2tV5bY5lI5tT3b"
+      ],
+      "canonicalSeedString": "A3tL4rE1tK3lW3tM5rF1tU4lD5bR5lB3bC5lP3lZ1rH1lX2rG2lO6rS4rN6tJ2tV5bY5lI5tT3b",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "847a5e5eb94ace2cf66ebaa022fd29bc872e591dfeeec451c053afabb510c468",
+      "mnemonic": "love spray nut income provide biology super struggle parent blood engine jungle indicate clutch jewel tape session mix belt gap robust mask balance build",
+      "bip39SeedWithEmptyPassphraseHex": "bf57c206c03a9ca072e939b9538df8203e583cd802a6254e2279eca0bd4265238374e57519f259522ae8df0bcc3f854660f3785dd709b3a7170a68c928aa6901",
+      "bip32MasterFingerprint": "c858ad55",
+      "bip84FirstReceiveAddress": "bc1qh3yukkfqacs4yncfut5k04pzj0zzxnf3xklsef"
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "Y4tT6lV4bM3rX1tD3bL6lI5lZ1tR1bN6lB4lP2bO5rA6rW1tJ2bE6rG1rF1bS4tU6rC5tK4tH4r",
+      "allFourRotations": [
+        "Y4tT6lV4bM3rX1tD3bL6lI5lZ1tR1bN6lB4lP2bO5rA6rW1tJ2bE6rG1rF1bS4tU6rC5tK4tH4r",
+        "S4rW1rN6tD3lY4rU6bJ2lB4tL6tT6tC5rE6bP2lI5tV4lK4rG1bO5bZ1rM3bH4bF1lA6bR1lX1r",
+        "H4lK4bC5bU6lS4bF1tG1lE6lJ2tW1bA6lO5lP2tB4rN6rR1tZ1bI5rL6rD3tX1bM3lV4tT6rY4b",
+        "X1lR1rA6tF1rH4tM3tZ1lO5tG1tK4lV4rI5bP2rE6tC5lT6bL6bB4bJ2rU6tY4lD3rN6bW1lS4l"
+      ],
+      "canonicalSeedString": "H4lK4bC5bU6lS4bF1tG1lE6lJ2tW1bA6lO5lP2tB4rN6rR1tZ1bI5rL6rD3tX1bM3lV4tT6rY4b",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "7de5367a1f3849da186c3a4adbd2a41d661679275542cd88921fd7dc0a22c40c",
+      "mnemonic": "law claim ozone dinosaur loyal unfair giant mansion enlist teach poverty depart gesture develop outer portion snow duty margin quick scheme badge awake midnight",
+      "bip39SeedWithEmptyPassphraseHex": "afe07c34ccc97d10b2fdde9da63368688e6c138cf6dbd19d7f6a466163913ecc87ba909231c6bc705c7e1c6b0ed1d1ca791a03dd3d2327e50cff4484b2447b52",
+      "bip32MasterFingerprint": "986d62ae",
+      "bip84FirstReceiveAddress": "bc1qkm4lmethkp27qr07ek90qr9px7yz0yjv9vdte8"
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "O4tV2tI2bA1lW2tB5rZ5tD3lS1tK1lR2bC2bP6bX2lU6rE3rY2tG6rH5bM1tL6tT6lJ6bN6rF1b",
+      "allFourRotations": [
+        "O4tV2tI2bA1lW2tB5rZ5tD3lS1tK1lR2bC2bP6bX2lU6rE3rY2tG6rH5bM1tL6tT6lJ6bN6rF1b",
+        "L6rE3bR2lB5bO4rT6tY2rC2lZ5rV2rJ6lG6bP6lD3tI2lN6bH5lX2tS1rA1tF1lM1rU6bK1tW2r",
+        "F1tN6lJ6tT6rL6bM1bH5tG6lY2bE3lU6lX2rP6tC2tR2tK1rS1bD3rZ5bB5lW2bA1rI2tV2bO4b",
+        "W2lK1bU6tM1lF1rA1bS1lX2bH5rN6tI2rD3bP6rG6tJ6rV2lZ5lC2rY2lT6bO4lB5tR2rE3tL6l"
+      ],
+      "canonicalSeedString": "F1tN6lJ6tT6rL6bM1bH5tG6lY2bE3lU6lX2rP6tC2tR2tK1rS1bD3rZ5bB5lW2bA1rI2tV2bO4b",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "0e688429ab749333897f909c398efa68211048e3f44350105a354a878937826f",
+      "mnemonic": "attack during apology finger empty oil chalk velvet order small salon space baby caught more mask exotic lizard minute never joy orange answer weird",
+      "bip39SeedWithEmptyPassphraseHex": "b670f66333de53134b85849b225e19b2d3ae8bd41c090847f2e1ee7b093718b1c13fb499088d140a1cb16227b4b630481778d35dd921cf61a80762411171682b",
+      "bip32MasterFingerprint": "8723fea1",
+      "bip84FirstReceiveAddress": "bc1qwfg4erp9msrhu0g0qkrqkep320503qq3cxq0dr"
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "M3bO1tK1tB3tG5rP1tN5bH2rV3bX3bU1tT4bF2tW6bS4tI1tY1tC3lE3lD5lR4bA3bZ1rJ5rL2l",
+      "allFourRotations": [
+        "M3bO1tK1tB3tG5rP1tN5bH2rV3bX3bU1tT4bF2tW6bS4tI1tY1tC3lE3lD5lR4bA3bZ1rJ5rL2l",
+        "R4lI1rU1rP1rM3lA3lY1rT4lN5lO1rZ1bC3tF2rH2bK1rJ5bE3tW6lV3lB3rL2tD5tS4rX3lG5b",
+        "L2rJ5lZ1lA3tR4tD5rE3rC3rY1bI1bS4bW6tF2bT4tU1bX3tV3tH2lN5tP1bG5lB3bK1bO1bM3t",
+        "G5tX3rS4lD5bL2bB3lV3rW6rE3bJ5tK1lH2tF2lC3bZ1tO1lN5rT4rY1lA3rM3rP1lU1lI1lR4r"
+      ],
+      "canonicalSeedString": "G5tX3rS4lD5bL2bB3lV3rW6rE3bJ5tK1lH2tF2lC3bZ1tO1lN5rT4rY1lA3rM3rP1lU1lI1lR4r",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "de8d6b0afebb1767a32693278dcd9043bd8d4a7fc69fb2f72f395527ab93d327",
+      "mnemonic": "teach hero section word ramp record milk sponsor chest hover goat manual sugar pioneer yellow stadium real ride soft prevent kingdom size erode veteran",
+      "bip39SeedWithEmptyPassphraseHex": "4bbb676dcd4139de4ef8b9ec1648e70e195f71c5a7cb271d9278f011eee289c81812e9864325b76b99aae25b4e32305ecc6ece8d9062ce31b0f5f0c89076d228",
+      "bip32MasterFingerprint": "10c9182e",
+      "bip84FirstReceiveAddress": "bc1qzychha7awzkue4m28u4sg059gmy0rqdhfcr25e"
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "O4rF4tZ4rV2bM6rN5bR4bH3tB2rU1tC3tA5bD4bX1bE1bW2bK4rY4lL6bG2bS5lJ4rP5bI5tT5b",
+      "allFourRotations": [
+        "O4rF4tZ4rV2bM6rN5bR4bH3tB2rU1tC3tA5bD4bX1bE1bW2bK4rY4lL6bG2bS5lJ4rP5bI5tT5b",
+        "S5tW2lC3rN5lO4bJ4bK4bA5lR4lF4rP5lY4tD4lH3rZ4bI5rL6lX1lB2bV2lT5lG2lE1lU1rM6b",
+        "T5tI5bP5tJ4lS5rG2tL6tY4rK4lW2tE1tX1tD4tA5tC3bU1bB2lH3bR4tN5tM6lV2tZ4lF4bO4l",
+        "M6tU1lE1rG2rT5rV2rB2tX1rL6rI5lZ4tH3lD4rY4bP5rF4lR4rA5rK4tJ4tO4tN5rC3lW2rS5b"
+      ],
+      "canonicalSeedString": "M6tU1lE1rG2rT5rV2rB2tX1rL6rI5lZ4tH3lD4rY4bP5rF4lR4rA5rK4tJ4tO4tN5rC3lW2rS5b",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "8571e97022c08ff4da51535be3a3d3b68852cc04d2fe72a867077136506fffc7",
+      "mnemonic": "lyrics monster foster easily angry whip harsh clerk fossil brown visual home lunch gravity battle garlic increase drip scrub tiny govern dawn yellow word",
+      "bip39SeedWithEmptyPassphraseHex": "d0dd5180d9c16bbc559a32c4694734f6ed8cf6e8f002ef6ab66760676c51daddde2d87149d058ee86675180a570824d2811c5252a9567a4166821fc531aca30e",
+      "bip32MasterFingerprint": "b5fcc48c",
+      "bip84FirstReceiveAddress": "bc1qd3mf2gcq5n7m28y0528j3vyhhj3wlu4l2vc5y3"
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "D1tE2rF3bG4lC5tH6rI1bJ2lK3tL4rM5bN6lO1tP2rR3bS4lT5tU6rV1bW2lB3tX4rY5bZ6lA1t",
+      "allFourRotations": [
+        "D1tE2rF3bG4lC5tH6rI1bJ2lK3tL4rM5bN6lO1tP2rR3bS4lT5tU6rV1bW2lB3tX4rY5bZ6lA1t",
+        "B3rS4tM5lH6bD1rX4bT5rN6tI1lE2bY5lU6bO1rJ2tF3lZ6tV1lP2bK3rG4tA1rW2tR3lL4bC5r",
+        "A1bZ6rY5tX4lB3bW2rV1tU6lT5bS4rR3tP2lO1bN6rM5tL4lK3bJ2rI1tH6lC5bG4rF3tE2lD1b",
+        "C5lL4tR3rW2bA1lG4bK3lP2tV1rZ6bF3rJ2bO1lU6tY5rE2tI1rN6bT5lX4tD1lH6tM5rS4bB3l"
+      ],
+      "canonicalSeedString": "A1bZ6rY5tX4lB3bW2rV1tU6lT5bS4rR3tP2lO1bN6rM5tL4lK3bJ2rI1tH6lC5bG4rF3tE2lD1b",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "70522bbc4ed8318c1b7ffa7298df3546dc1b24153da9a430d14f85aba0bdbbc1",
+      "mnemonic": "icon mule upper oval loan ship hospital young income shoulder snap misery script must female release picnic make fault area ring gain upper clap",
+      "bip39SeedWithEmptyPassphraseHex": "fd6e7ea19fa647c0239b79a21e39545f29e772866115783b4cbbdd45d9597702438282592f705050d5ec578a0b4ecafa2871e76fdbeec538c4edb51065d38fae",
+      "bip32MasterFingerprint": "8e9b2067",
+      "bip84FirstReceiveAddress": "bc1qm2nnaxcm8glqa7l0v2lld5a0j02e0m7uu4exh4"
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "Z6lB5bC4rD3tY2lE1bF6rG5tH4lI3bJ2rK1tA6lL5bM4rN3tO2lP1bR6rS5tX4lT3bU2rV1tW6l",
+      "allFourRotations": [
+        "Z6lB5bC4rD3tY2lE1bF6rG5tH4lI3bJ2rK1tA6lL5bM4rN3tO2lP1bR6rS5tX4lT3bU2rV1tW6l",
+        "X4tN3rJ2bE1lZ6tT3lO2tK1rF6bB5lU2bP1lA6tG5rC4bV1rR6bL5lH4tD3rW6tS5rM4bI3lY2t",
+        "W6rV1bU2lT3tX4rS5bR6lP1tO2rN3bM4lL5tA6rK1bJ2lI3tH4rG5bF6lE1tY2rD3bC4lB5tZ6r",
+        "Y2bI3rM4tS5lW6bD3lH4bL5rR6tV1lC4tG5lA6bP1rU2tB5rF6tK1lO2bT3rZ6bE1rJ2tN3lX4b"
+      ],
+      "canonicalSeedString": "W6rV1bU2lT3tX4rS5bR6lP1tO2rN3bM4lL5tA6rK1bJ2lI3tH4rG5bF6lE1tY2rD3bC4lB5tZ6r",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "a90c8633a30a44306b9e1274417839ef28e769847e77d1a1fb06256fbea2fec0",
+      "mnemonic": "poverty goddess mind ecology picture blouse purpose seat inmate armed attack tattoo mobile regular ball solve spider average screen enlist winner fabric wild already",
+      "bip39SeedWithEmptyPassphraseHex": "b5f7bc493511afa5249c234b28357b302a381142185ab90f4ba1ab3491b0b3a417bcd2734f1acbd292f228b211d5003e21b33ebf9d7c68d8d968e34037ce5284",
+      "bip32MasterFingerprint": "2a771367",
+      "bip84FirstReceiveAddress": "bc1qqq0v76p84r9sprewuycrez4d227luskr42vkq6"
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "allFourRotations": [
+        "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+        "V3rP4tK5lF6bA1rW4bR5rL6tG1lB2bX5lS6bM1rH2tC3lY6tT1lN2bI3rD4tZ1rU2tO3lJ4bE5r",
+        "Z1bY6rX5tW4lV3bU2rT1tS6lR5bP4rO3tN2lM1bL6rK5tJ4lI3bH2rG1tF6lE5bD4rC3tB2lA1b",
+        "E5lJ4tO3rU2bZ1lD4bI3lN2tT1rY6bC3rH2bM1lS6tX5rB2tG1rL6bR5lW4tA1lF6tK5rP4bV3l"
+      ],
+      "canonicalSeedString": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "d19e149109f0d77657fc39d91583c9a2b8f392a71a20b0bb0f3f67f3d0455480",
+      "mnemonic": "spice vague cattle become aspect robot garment mango suit project venue earth monkey sing organ dune radar such sound soup dial cargo faith bleak",
+      "bip39SeedWithEmptyPassphraseHex": "fc22c4457e1ffcc79e70855d70c4923515c1213bc7658b5c3a8121365a0116a105bbf28ad6923d0dae648800093a672c08de528cca519de06a104eba6aba2ecd",
+      "bip32MasterFingerprint": "3d913c8d",
+      "bip84FirstReceiveAddress": "bc1q3rz9x8m80270zg7c4x0rqhh8flghy9jzsrq96p"
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM6tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "allFourRotations": [
+        "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM6tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+        "V3rP4tK5lF6bA1rW4bR5rL6tG1lB2bX5lS6bM6rH2tC3lY6tT1lN2bI3rD4tZ1rU2tO3lJ4bE5r",
+        "Z1bY6rX5tW4lV3bU2rT1tS6lR5bP4rO3tN2lM6bL6rK5tJ4lI3bH2rG1tF6lE5bD4rC3tB2lA1b",
+        "E5lJ4tO3rU2bZ1lD4bI3lN2tT1rY6bC3rH2bM6lS6tX5rB2tG1rL6bR5lW4tA1lF6tK5rP4bV3l"
+      ],
+      "canonicalSeedString": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM6tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "522ef87f6034f6a6f1b6666150d0fd49f27f22c4a7f2f673acf89c8fd5edec93",
+      "mnemonic": "fall jelly cabin scatter exhaust fat short smoke genuine make dismiss negative child multiply barely wrestle wait output dilemma decorate wool want rather give",
+      "bip39SeedWithEmptyPassphraseHex": "5495413a7407363406e84297af85747f4a9bc526988f35eeea34fce8e5870a797c9824d4fc420b09b9f6f46f6d0676c1b9a1b2d8bc8f465ab34437e8e03f1c31",
+      "bip32MasterFingerprint": "dd3c50e6",
+      "bip84FirstReceiveAddress": "bc1qxcypv762w75u2kzy6lszu733rcnl3u3wmaswyd"
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "H3rI2tJ1lK6bL5rM4tN3lO2bP1rR6tS5lT4bU3rV2tW1lX6bY5rZ4tA3lB2bC1rD6tE5lF4bG3r",
+      "allFourRotations": [
+        "H3rI2tJ1lK6bL5rM4tN3lO2bP1rR6tS5lT4bU3rV2tW1lX6bY5rZ4tA3lB2bC1rD6tE5lF4bG3r",
+        "C1bX6lS5tM4rH3bD6rY5bT4lN3tI2rE5tZ4rU3bO2lJ1tF4lA3tV2rP1bK6lG3bB2lW1tR6rL5b",
+        "G3lF4tE5rD6bC1lB2tA3rZ4bY5lX6tW1rV2bU3lT4tS5rR6bP1lO2tN3rM4bL5lK6tJ1rI2bH3l",
+        "L5tR6lW1bB2rG3tK6rP1tV2lA3bF4rJ1bO2rU3tZ4lE5bI2lN3bT4rY5tD6lH3tM4lS5bX6rC1t"
+      ],
+      "canonicalSeedString": "C1bX6lS5tM4rH3bD6rY5bT4lN3tI2rE5tZ4rU3bO2lJ1tF4lA3tV2rP1bK6lG3bB2lW1tR6rL5b",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "f3550b75dfa6f201ce46dab352831c16701c7f2b4c40a6ad63f1a3c3fbd4baa1",
+      "mnemonic": "viable portion talent satisfy hundred abstract decorate swap rebuild neglect shove coconut achieve display pudding marine pluck help wise elegant distance tumble tunnel castle",
+      "bip39SeedWithEmptyPassphraseHex": "579afc95a8b7d02fbf4ebe638bdf92025c78e36ee63d6f707ec6e28f60cd7c37c1488eed5b4bae2307a4990fc0988903e60b9d9df5d752307909db3089c73700",
+      "bip32MasterFingerprint": "e9a950dd",
+      "bip84FirstReceiveAddress": "bc1qp35plmjarn3mxkn9y5r55e6gjt8nzp58wydzg9"
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "H3rI2tJ1lK6bL5rM4tN3lO2tP1rR6tS5lT4bU3rV2tW1lX6bY5rZ4tA3lB2bC1rD6tE5lF4bG3r",
+      "allFourRotations": [
+        "H3rI2tJ1lK6bL5rM4tN3lO2tP1rR6tS5lT4bU3rV2tW1lX6bY5rZ4tA3lB2bC1rD6tE5lF4bG3r",
+        "C1bX6lS5tM4rH3bD6rY5bT4lN3tI2rE5tZ4rU3bO2rJ1tF4lA3tV2rP1bK6lG3bB2lW1tR6rL5b",
+        "G3lF4tE5rD6bC1lB2tA3rZ4bY5lX6tW1rV2bU3lT4tS5rR6bP1lO2bN3rM4bL5lK6tJ1rI2bH3l",
+        "L5tR6lW1bB2rG3tK6rP1tV2lA3bF4rJ1bO2lU3tZ4lE5bI2lN3bT4rY5tD6lH3tM4lS5bX6rC1t"
+      ],
+      "canonicalSeedString": "C1bX6lS5tM4rH3bD6rY5bT4lN3tI2rE5tZ4rU3bO2rJ1tF4lA3tV2rP1bK6lG3bB2lW1tR6rL5b",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "44a18eb79c785d8241df74335ac98d0d5f930b0c48d164588f03c66300334096",
+      "mnemonic": "dwarf arrest pupil decline magic scorpion alter update crew stone globe boy weird machine couple boss gold settle science mimic copy boost across talk",
+      "bip39SeedWithEmptyPassphraseHex": "649566457ad63f294b4cfd8e0bd2f680645fd4bde6eece2b6a21aaa74f7f90b3142825a67a824da32eadad08f4dace928974766596c761a33d31828ca99ad59c",
+      "bip32MasterFingerprint": "f2ced46c",
+      "bip84FirstReceiveAddress": "bc1qnpqvuz2ms2yajp4dzsc0ep0gukggllk2lt0clc"
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "A1bB1rC1tD1lE1bF1rG1tH1lI1bJ1rK1tL1lM1bN1rO1tP1lR1bS1rT1tU1lV1bW1rX4tY6lZ1b",
+      "allFourRotations": [
+        "A1bB1rC1tD1lE1bF1rG1tH1lI1bJ1rK1tL1lM1bN1rO1tP1lR1bS1rT1tU1lV1bW1rX4tY6lZ1b",
+        "V1lP1tK1rF1bA1lW1bR1lL1tG1rB1bX4rS1bM1lH1tC1rY6tT1rN1bI1lD1tZ1lU1tO1rJ1bE1l",
+        "Z1tY6rX4bW1lV1tU1rT1bS1lR1tP1rO1bN1lM1tL1rK1bJ1lI1tH1rG1bF1lE1tD1rC1bB1lA1t",
+        "E1rJ1tO1lU1bZ1rD1bI1rN1tT1lY6bC1lH1bM1rS1tX4lB1tG1lL1bR1rW1tA1rF1tK1lP1bV1r"
+      ],
+      "canonicalSeedString": "A1bB1rC1tD1lE1bF1rG1tH1lI1bJ1rK1tL1lM1bN1rO1tP1lR1bS1rT1tU1lV1bW1rX4tY6lZ1b",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "004d01781a085134b27fcd6bd1464e5ce8e310e9f4befa5af1071f8777bdd555",
+      "mnemonic": "able gym fun cross lunar olympic size whale hint mechanic near right mixed mask pond oak where stuff dove disease jazz ten fetch resist",
+      "bip39SeedWithEmptyPassphraseHex": "0eb1e93454bbaf44e4af2618212c8c0fbeec8d1c52e8ec4cd82b0806f2cbbdf65dca74994aef9bfb51da2c92bfe4fd9ad14a6b1aa0a3ccb9c986e2610385d52e",
+      "bip32MasterFingerprint": "8a96376e",
+      "bip84FirstReceiveAddress": "bc1qltukzrlk663y53xhm7u7m7m8xapl4p623sapx0"
+    }
+  ],
+  "invalidValidationPrecedence": {
+    "steps": [
+      {
+        "check": "ASCII encodability",
+        "errorCode": "NON_ASCII"
+      },
+      {
+        "check": "exactly 75 ASCII bytes",
+        "errorCode": "INVALID_LENGTH"
+      },
+      {
+        "check": "face triples in zero-based position order 0 through 24",
+        "perFaceErrorOrder": [
+          "INVALID_LETTER",
+          "INVALID_DIGIT",
+          "INVALID_ORIENTATION"
+        ]
+      },
+      {
+        "check": "complete unique allowed-letter set",
+        "errorCode": "DUPLICATE_OR_MISSING_LETTER"
       }
+    ],
+    "multipleFailureRule": "stop at the first failed step or first failed per-face check"
+  },
+  "invalidCases": [
+    {
+      "id": "I01",
+      "coverage": [
+        "wrong-face-count",
+        "24-faces",
+        "short"
+      ],
+      "diceKeyHumanReadableForm": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6l",
+      "expectedErrorCode": "INVALID_LENGTH"
+    },
+    {
+      "id": "I02",
+      "coverage": [
+        "wrong-face-count",
+        "26-faces",
+        "extra"
+      ],
+      "diceKeyHumanReadableForm": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1tA1t",
+      "expectedErrorCode": "INVALID_LENGTH"
+    },
+    {
+      "id": "I03",
+      "coverage": [
+        "truncated-final-face",
+        "short"
+      ],
+      "diceKeyHumanReadableForm": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1",
+      "expectedErrorCode": "INVALID_LENGTH"
+    },
+    {
+      "id": "I04",
+      "coverage": [
+        "extra-character",
+        "extra"
+      ],
+      "diceKeyHumanReadableForm": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t ",
+      "expectedErrorCode": "INVALID_LENGTH"
+    },
+    {
+      "id": "I05",
+      "coverage": [
+        "malformed-face",
+        "unknown-letter"
+      ],
+      "diceKeyHumanReadableForm": "A1t-2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "expectedErrorCode": "INVALID_LETTER"
+    },
+    {
+      "id": "I06",
+      "coverage": [
+        "excluded-letter",
+        "Q"
+      ],
+      "diceKeyHumanReadableForm": "Q1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "expectedErrorCode": "INVALID_LETTER"
+    },
+    {
+      "id": "I07",
+      "coverage": [
+        "unknown-letter",
+        "question-mark"
+      ],
+      "diceKeyHumanReadableForm": "?1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "expectedErrorCode": "INVALID_LETTER"
+    },
+    {
+      "id": "I08",
+      "coverage": [
+        "invalid-digit",
+        "zero"
+      ],
+      "diceKeyHumanReadableForm": "A0tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "expectedErrorCode": "INVALID_DIGIT"
+    },
+    {
+      "id": "I09",
+      "coverage": [
+        "invalid-digit",
+        "seven"
+      ],
+      "diceKeyHumanReadableForm": "A7tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "expectedErrorCode": "INVALID_DIGIT"
+    },
+    {
+      "id": "I10",
+      "coverage": [
+        "unknown-orientation",
+        "question-mark"
+      ],
+      "diceKeyHumanReadableForm": "A1?B2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "expectedErrorCode": "INVALID_ORIENTATION"
+    },
+    {
+      "id": "I11",
+      "coverage": [
+        "invalid-orientation",
+        "unsupported-upright-alias"
+      ],
+      "diceKeyHumanReadableForm": "A1uB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "expectedErrorCode": "INVALID_ORIENTATION"
+    },
+    {
+      "id": "I12",
+      "coverage": [
+        "duplicate-letter",
+        "missing-letter"
+      ],
+      "diceKeyHumanReadableForm": "A1tA2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "expectedErrorCode": "DUPLICATE_OR_MISSING_LETTER"
+    },
+    {
+      "id": "I13",
+      "coverage": [
+        "non-ascii",
+        "unicode-letter"
+      ],
+      "diceKeyHumanReadableForm": "Å1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "expectedErrorCode": "NON_ASCII"
+    }
+  ],
+  "acquisitionPolicyCases": [
+    {
+      "id": "P01",
+      "coverage": [
+        "scanner-ambiguity",
+        "no-best-guess",
+        "no-auto-repair"
+      ],
+      "condition": "scanner has two individually valid complete readings that differ only at zero-based face 12",
+      "candidateHumanReadableForms": [
+        "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+        "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM6tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t"
+      ],
+      "differingZeroBasedFacePositions": [
+        12
+      ],
+      "expectedAcquisitionState": "AMBIGUOUS_SCAN",
+      "humanReadableFormProduced": false,
+      "profileDerivationInvoked": false
     }
   ]
 }
