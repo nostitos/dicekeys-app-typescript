@@ -1,0 +1,131 @@
+{
+  "profile": "DK-BIP39-24-v1",
+  "status": "phase0-baseline-not-yet-phase1-approved",
+  "auditedApplicationCommit": "4eac9aa7248d40891b2d77527c4c1db39e3c9285",
+  "seededCryptoPackage": "@dicekeys/seeded-crypto-js@0.3.0",
+  "seededCryptoPackageSourceCommit": "6abb040989f4ad0dce5026e08407425ff57a401e",
+  "generatedWasmJavaScriptBlobSha": "a2e1b576c3ff15f665fd7adf9035ea092e0ba938",
+  "generatedWasmJavaScriptSha256": "8a29007c11ebd0a0e8793089c6aa480633474d0336a41f0f4b248ef385b6d1ec",
+  "seededCryptoSourceCommit": "8e1d1965c1720b8964e3ee1880163f7a6b221781",
+  "lockedPackageTarballIntegrityVerified": false,
+  "recipe": "{\"purpose\":\"wallet\"}",
+  "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+  "notes": [
+    "These five public synthetic vectors preserve the Phase 0 upstream baseline.",
+    "They were checked against the generated upstream 0.3.0 WASM source blob and a temporary independent Python calculation.",
+    "The authenticated GitHub Package tarball could not be acquired in Phase 0, so its lockfile integrity hash has not yet been compared with the public generated-source blob.",
+    "They do not satisfy the Phase 1 requirement for at least 20 reviewed vectors or the still-null wallet-level fields."
+  ],
+  "vectors": [
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "M2rU2lJ1bH5tK4lD2bI2bB4bF2rX1bC6lR2tO1tP4rG1bS4tN4lY1rE3tL1tZ6lV6lA3lW4lT5r",
+      "allFourRotations": [
+        "M2rU2lJ1bH5tK4lD2bI2bB4bF2rX1bC6lR2tO1tP4rG1bS4tN4lY1rE3tL1tZ6lV6lA3lW4lT5r",
+        "Z6tS4rC6tD2lM2bV6tN4tR2rI2lU2tA3tY1bO1rB4lJ1lW4tE3rP4bF2bH5rT5bL1rG1lX1lK4t",
+        "T5lW4rA3rV6rZ6rL1bE3bY1lN4rS4bG1tP4lO1bR2bC6rX1tF2lB4tI2tD2tK4rH5bJ1tU2rM2l",
+        "K4bX1rG1rL1lT5tH5lF2tP4tE3lW4bJ1rB4rO1lY1tA3bU2bI2rR2lN4bV6bM2tD2rC6bS4lZ6b"
+      ],
+      "canonicalSeedString": "K4bX1rG1rL1lT5tH5lF2tP4tE3lW4bJ1rB4rO1lY1tA3bU2bI2rR2lN4bV6bM2tD2rC6bS4lZ6b",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "4f2ffae92b02020369c5c21106e48cb838d72886df4ca03ed107f4cac3e46631",
+      "mnemonic": "execute lemon ripple figure cage accuse poem reunion baby damp case idea miracle nephew bread trumpet parent walk draft trumpet promote vendor occur deliver",
+      "bip39SeedWithEmptyPassphraseHex": null,
+      "bip32MasterFingerprint": null,
+      "bip84FirstReceiveAddress": null,
+      "verification": {
+        "allFourRotationsMatch": true,
+        "upstreamWasm": true,
+        "independentPython": true
+      }
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "M6bU3lV1lS5lT2tY5bD3bX3rI2rH2rL4lJ5rG6rK2lA1bE5bZ4rF6bP1tW3tO3tR5rC2lN4tB2r",
+      "allFourRotations": [
+        "M6bU3lV1lS5lT2tY5bD3bX3rI2rH2rL4lJ5rG6rK2lA1bE5bZ4rF6bP1tW3tO3tR5rC2lN4tB2r",
+        "O3rE5lL4tY5lM6lR5bZ4bJ5bD3lU3tC2tF6lG6bX3bV1tN4rP1rK2tI2bS5tB2bW3rA1lH2bT2r",
+        "B2lN4bC2rR5lO3bW3bP1bF6tZ4lE5tA1tK2rG6lJ5lL4rH2lI2lX3lD3tY5tT2bS5rV1rU3rM6t",
+        "T2lH2tA1rW3lB2tS5bI2tK2bP1lN4lV1bX3tG6tF6rC2bU3bD3rJ5tZ4tR5tM6rY5rL4bE5rO3l"
+      ],
+      "canonicalSeedString": "B2lN4bC2rR5lO3bW3bP1bF6tZ4lE5tA1tK2rG6lJ5lL4rH2lI2lX3lD3tY5tT2bS5rV1rU3rM6t",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "6332b21f2d8fb6e8582b33bc8db315a906388140e9003a997c052b446e145a3b",
+      "mnemonic": "glimpse night march force window injury gaze grid route horn shell faith glory doll admit cactus dentist slogan access final eight any happy insect",
+      "bip39SeedWithEmptyPassphraseHex": null,
+      "bip32MasterFingerprint": null,
+      "bip84FirstReceiveAddress": null,
+      "verification": {
+        "allFourRotationsMatch": true,
+        "upstreamWasm": true,
+        "independentPython": true
+      }
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "M3bG4lY3rP2bL6lF5bS3tT2rB4rD3rI3lV4lO2tZ1rW5bA4lE2rR2tC4bK6rJ4bU4rN1bH6bX2r",
+      "allFourRotations": [
+        "M3bG4lY3rP2bL6lF5bS3tT2rB4rD3rI3lV4lO2tZ1rW5bA4lE2rR2tC4bK6rJ4bU4rN1bH6bX2r",
+        "J4lA4tI3tF5lM3lU4bE2bV4tS3rG4tN1lR2rO2rT2bY3bH6lC4lZ1bB4bP2lX2bK6bW5lD3bL6t",
+        "X2lH6tN1tU4lJ4tK6lC4tR2bE2lA4rW5tZ1lO2bV4rI3rD3lB4lT2lS3bF5tL6rP2tY3lG4rM3t",
+        "L6bD3tW5rK6tX2tP2rB4tZ1tC4rH6rY3tT2tO2lR2lN1rG4bS3lV4bE2tU4tM3rF5rI3bA4bJ4r"
+      ],
+      "canonicalSeedString": "J4lA4tI3tF5lM3lU4bE2bV4tS3rG4tN1lR2rO2rT2bY3bH6lC4lZ1bB4bP2lX2bK6bW5lD3bL6t",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "2277ef937d7d3beec14ccd3391af09ad466cfb4081b23aec20410b4848f891ff",
+      "mnemonic": "carbon satoshi tooth wife squirrel wash ahead often crime miracle second fold grocery laundry acoustic curve depend genre aware bird loyal labor elevator toe",
+      "bip39SeedWithEmptyPassphraseHex": null,
+      "bip32MasterFingerprint": null,
+      "bip84FirstReceiveAddress": null,
+      "verification": {
+        "allFourRotationsMatch": true,
+        "upstreamWasm": true,
+        "independentPython": true
+      }
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "V4lB3lS3lC3bG4lR6tE2rH4bP1lU1rO2rN6lY1bK4lX4lF6lJ6lD3bT5rL1lW4lI2lZ3bA2rM6r",
+      "allFourRotations": [
+        "V4lB3lS3lC3bG4lR6tE2rH4bP1lU1rO2rN6lY1bK4lX4lF6lJ6lD3bT5rL1lW4lI2lZ3bA2rM6r",
+        "W4tF6tO2bR6rV4tI2tJ6tN6tE2bB3tZ3lD3lY1lH4lS3tA2bT5bK4tP1tC3lM6bL1tX4tU1bG4t",
+        "M6lA2lZ3tI2rW4rL1rT5lD3tJ6rF6rX4rK4rY1tN6rO2lU1lP1rH4tE2lR6bG4rC3tS3rB3rV4r",
+        "G4bU1tX4bL1bM6tC3rP1bK4bT5tA2tS3bH4rY1rD3rZ3rB3bE2tN6bJ6bI2bV4bR6lO2tF6bW4b"
+      ],
+      "canonicalSeedString": "G4bU1tX4bL1bM6tC3rP1bK4bT5tA2tS3bH4rY1rD3rZ3rB3bE2tN6bJ6bI2bV4bR6lO2tF6bW4b",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "65f498aaaa6df51db79fb7fdba2a80691c84e24031881af20312027944079e25",
+      "mnemonic": "grass pill click feel tent mom taxi want world spend parade split sign illness absorb country brain mosquito setup agent nephew adult joy same",
+      "bip39SeedWithEmptyPassphraseHex": null,
+      "bip32MasterFingerprint": null,
+      "bip84FirstReceiveAddress": null,
+      "verification": {
+        "allFourRotationsMatch": true,
+        "upstreamWasm": true,
+        "independentPython": true
+      }
+    },
+    {
+      "profile": "DK-BIP39-24-v1",
+      "diceKeyHumanReadableForm": "N5rD5tJ2lM3lA6rZ4tS3tR4bI2rX1lT1rP1tC2tY2bE4tF1rG4lK4tV4lH4tU6bW5tL3lB2tO5l",
+      "allFourRotations": [
+        "N5rD5tJ2lM3lA6rZ4tS3tR4bI2rX1lT1rP1tC2tY2bE4tF1rG4lK4tV4lH4tU6bW5tL3lB2tO5l",
+        "U6lF1bT1bZ4rN5bW5rG4tP1rS3rD5rL3tK4rC2rR4lJ2tB2rV4tY2lI2bM3tO5tH4rE4rX1tA6b",
+        "O5rB2bL3rW5bU6tH4bV4rK4bG4rF1lE4bY2tC2bP1bT1lX1rI2lR4tS3bZ4bA6lM3rJ2rD5bN5l",
+        "A6tX1bE4lH4lO5bM3bI2tY2rV4bB2lJ2bR4rC2lK4lL3bD5lS3lP1lG4bW5lN5tZ4lT1tF1tU6r"
+      ],
+      "canonicalSeedString": "A6tX1bE4lH4lO5bM3bI2tY2rV4bB2lJ2bR4rC2lK4lL3bD5lS3lP1lG4bW5lN5tZ4lT1tF1tU6r",
+      "recipeUtf8Hex": "7b22707572706f7365223a2277616c6c6574227d",
+      "derivedEntropyHex": "c8373a5f8378261b48f81f395288bccab1a65f66b1e58e480ed514d8d64c720c",
+      "mnemonic": "sight right obey alone list asset catalog advance deer nephew connect nice bounce cook onion device mixture document relief claim miracle change sight paper",
+      "bip39SeedWithEmptyPassphraseHex": null,
+      "bip32MasterFingerprint": null,
+      "bip84FirstReceiveAddress": null,
+      "verification": {
+        "allFourRotationsMatch": true,
+        "upstreamWasm": true,
+        "independentPython": true
+      }
+    }
+  ]
+}
