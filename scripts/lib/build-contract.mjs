@@ -64,11 +64,25 @@ export const isAllowedBuildEnvironmentKey = (key) => {
   );
 };
 
+export const isWindowsRuntimeEnvironmentKey = (key) => {
+  const normalized = key.toUpperCase();
+  return normalized === "MSYSTEM" || normalized === "COMMONPROGRAMFILES(X86)";
+};
+
 export const isCanonicalRuntimeEnvironmentEntry = (
   key,
   value,
   platform = process.platform,
-) => key.toUpperCase() === "UV_USE_IO_URING" && platform === "linux" && value === "0";
+) => {
+  const normalized = key.toUpperCase();
+  if (normalized === "UV_USE_IO_URING") return platform === "linux" && value === "0";
+  if (platform !== "win32") return false;
+  if (normalized === "MSYSTEM") return value === "MINGW64";
+  if (normalized === "COMMONPROGRAMFILES(X86)") {
+    return value === "C:\\Program Files (x86)\\Common Files";
+  }
+  return false;
+};
 
 const baseBuildEnvironment = () => ({
   ...minimalInheritedEnvironment(),

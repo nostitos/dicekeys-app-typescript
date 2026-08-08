@@ -10,6 +10,7 @@ import {
   isCanonicalRuntimeEnvironmentEntry,
   isHostileBuildEnvironmentKey,
   isSensitiveEnvironmentKey,
+  isWindowsRuntimeEnvironmentKey,
   repositoryRoot,
 } from "./lib/build-contract.mjs";
 
@@ -70,8 +71,23 @@ const sentinels = {
   UV_USE_IO_URING: "1",
 };
 
+const windowsRuntimeSentinels = {
+  "CommonProgramFiles(x86)": "C:\\hostile\\Common Files",
+  MSYSTEM: "HOSTILE",
+};
+const originalWindowsRuntimeEntries = new Map(
+  Object.keys(windowsRuntimeSentinels).map((key) => [
+    key,
+    Object.prototype.hasOwnProperty.call(process.env, key) ? process.env[key] : undefined,
+  ]),
+);
 for (const [key, value] of Object.entries(sentinels)) process.env[key] = value;
+for (const [key, value] of Object.entries(windowsRuntimeSentinels)) process.env[key] = value;
 const javascriptEnvironment = await commandEnvironment();
+for (const [key, originalValue] of originalWindowsRuntimeEntries) {
+  if (originalValue === undefined) delete process.env[key];
+  else process.env[key] = originalValue;
+}
 const javascriptSurvivors = Object.keys(javascriptEnvironment).filter(
   (key) =>
     (isSensitiveEnvironmentKey(key) || isHostileBuildEnvironmentKey(key)) &&
@@ -84,9 +100,42 @@ if (javascriptSurvivors.length) {
 if (
   !isCanonicalRuntimeEnvironmentEntry("UV_USE_IO_URING", "0", "linux") ||
   isCanonicalRuntimeEnvironmentEntry("UV_USE_IO_URING", "1", "linux") ||
-  isCanonicalRuntimeEnvironmentEntry("UV_USE_IO_URING", "0", "darwin")
+  isCanonicalRuntimeEnvironmentEntry("UV_USE_IO_URING", "0", "darwin") ||
+  !isCanonicalRuntimeEnvironmentEntry("MSYSTEM", "MINGW64", "win32") ||
+  isCanonicalRuntimeEnvironmentEntry("MSYSTEM", "HOSTILE", "win32") ||
+  isCanonicalRuntimeEnvironmentEntry("MSYSTEM", "MINGW64", "linux") ||
+  !isCanonicalRuntimeEnvironmentEntry(
+    "CommonProgramFiles(x86)",
+    "C:\\Program Files (x86)\\Common Files",
+    "win32",
+  ) ||
+  isCanonicalRuntimeEnvironmentEntry(
+    "CommonProgramFiles(x86)",
+    "D:\\Program Files (x86)\\Common Files",
+    "win32",
+  ) ||
+  isCanonicalRuntimeEnvironmentEntry(
+    "CommonProgramFiles(x86)",
+    "C:\\Program Files (x86)\\Common Files",
+    "darwin",
+  )
 ) {
-  throw new Error("Linux Node runtime environment exception is not exact and fail-closed");
+  throw new Error("runtime-created environment exceptions are not exact and fail-closed");
+}
+if (
+  !isWindowsRuntimeEnvironmentKey("MSYSTEM") ||
+  !isWindowsRuntimeEnvironmentKey("CommonProgramFiles(x86)") ||
+  isWindowsRuntimeEnvironmentKey("UV_USE_IO_URING")
+) {
+  throw new Error("Windows runtime-created environment key recognition is not exact");
+}
+const forwardedWindowsRuntimeKeys = Object.keys(javascriptEnvironment).filter((key) =>
+  isWindowsRuntimeEnvironmentKey(key),
+);
+if (forwardedWindowsRuntimeKeys.length) {
+  throw new Error(
+    `JavaScript environment forwarded verifier-only Windows runtime keys: ${forwardedWindowsRuntimeKeys.join(", ")}`,
+  );
 }
 const javascriptNonAllowlisted = Object.keys(javascriptEnvironment).filter(
   (key) => !isAllowedBuildEnvironmentKey(key),
@@ -96,7 +145,7 @@ if (javascriptNonAllowlisted.length) {
     `JavaScript environment retained non-allowlisted keys: ${javascriptNonAllowlisted.sort().join(", ")}`,
   );
 }
-for (const [key, hostileValue] of Object.entries(sentinels)) {
+for (const [key, hostileValue] of Object.entries({ ...sentinels, ...windowsRuntimeSentinels })) {
   if (javascriptEnvironment[key] === hostileValue) {
     throw new Error(`JavaScript environment retained hostile sentinel ${key}`);
   }
@@ -142,6 +191,25 @@ const unexpectedNpmKeys = Object.keys(javascriptEnvironment).filter(
 );
 if (unexpectedNpmKeys.length) {
   throw new Error(`JavaScript environment retained arbitrary npm config: ${unexpectedNpmKeys.join(", ")}`);
+}
+
+const verifierPath = join(repositoryRoot, "scripts", "verify-sanitized-environment.mjs");
+for (const [key, hostileValue] of Object.entries(windowsRuntimeSentinels)) {
+  const hostileVerifier = spawnSync(process.execPath, [verifierPath], {
+    cwd: repositoryRoot,
+    env: { ...javascriptEnvironment, [key]: hostileValue },
+    encoding: "utf8",
+  });
+  if (
+    hostileVerifier.status === 0 ||
+    !`${hostileVerifier.stdout}${hostileVerifier.stderr}`.includes(
+      "noncanonical Windows runtime-created environment survived",
+    )
+  ) {
+    throw new Error(
+      `verifier did not fail closed for hostile Windows runtime value ${key}:\n${hostileVerifier.stdout}${hostileVerifier.stderr}`,
+    );
+  }
 }
 
 const shellTest = spawnSync(

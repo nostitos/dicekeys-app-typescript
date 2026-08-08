@@ -8,9 +8,30 @@ import {
   isHostileBuildEnvironmentKey,
   isSensitiveEnvironmentKey,
   isCanonicalRuntimeEnvironmentEntry,
+  isWindowsRuntimeEnvironmentKey,
   runNpm,
 } from "./lib/build-contract.mjs";
 import { join } from "node:path";
+
+// Git Bash cannot unset the parenthesized CommonProgramFiles name, and MSYS
+// recreates MSYSTEM when it starts a native Node process. Accept only the
+// pinned runner values at this boundary, then remove them before any child run.
+for (const [key, value] of Object.entries(process.env).filter(([name]) =>
+  isWindowsRuntimeEnvironmentKey(name),
+)) {
+  if (!isCanonicalRuntimeEnvironmentEntry(key, value)) {
+    throw new Error(`noncanonical Windows runtime-created environment survived: ${key}`);
+  }
+  delete process.env[key];
+}
+const survivingWindowsRuntimeKeys = Object.keys(process.env).filter((key) =>
+  isWindowsRuntimeEnvironmentKey(key),
+);
+if (survivingWindowsRuntimeKeys.length) {
+  throw new Error(
+    `could not remove Windows runtime-created environment: ${survivingWindowsRuntimeKeys.join(", ")}`,
+  );
+}
 
 const unexpectedEnvironmentKeys = Object.keys(process.env)
   .filter((key) => !isAllowedBuildEnvironmentKey(key))
