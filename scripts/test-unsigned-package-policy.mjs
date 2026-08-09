@@ -106,9 +106,12 @@ if (
 if (
   config.npmRebuild !== false ||
   config.nodeGypRebuild !== false ||
-  config.buildDependenciesFromSource !== false
+  config.buildDependenciesFromSource !== false ||
+  config.win?.signAndEditExecutable !== false
 ) {
-  throw new Error("unsigned builder config must reuse the freshly bootstrapped, verified host native binding");
+  throw new Error(
+    "unsigned builder config must reuse verified native inputs and disable Windows sign/edit tooling",
+  );
 }
 
 console.log("unsigned config and package scanner reject credential, package-manager, and signing files");

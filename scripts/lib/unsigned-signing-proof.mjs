@@ -1,3 +1,76 @@
+import { spawnSync } from "node:child_process";
+import { isAbsolute, relative, resolve, sep } from "node:path";
+
+export const authenticodeExecutableEnvironmentKey =
+  "DICEKEYS_AUTHENTICODE_EXECUTABLE";
+
+export const authenticodeInspectionScript = [
+  "$ErrorActionPreference='Stop'",
+  `$executable=$env:${authenticodeExecutableEnvironmentKey}`,
+  "if([string]::IsNullOrWhiteSpace($executable)){throw 'missing Authenticode executable path'}",
+  "$signature=Get-AuthenticodeSignature -LiteralPath $executable -ErrorAction Stop",
+  "[pscustomobject]@{Status=[string]$signature.Status;StatusMessage=$signature.StatusMessage;SignerSubject=if($signature.SignerCertificate){$signature.SignerCertificate.Subject}else{$null};SignerThumbprint=if($signature.SignerCertificate){$signature.SignerCertificate.Thumbprint}else{$null}} | ConvertTo-Json -Compress",
+].join("; ");
+
+export const createAuthenticodeInspectionInvocation = ({
+  applicationExecutable,
+  packagedContentRoot,
+  sourceEnvironment = process.env,
+  pathImplementation = { isAbsolute, relative, resolve, sep },
+}) => {
+  if (
+    typeof applicationExecutable !== "string" ||
+    typeof packagedContentRoot !== "string" ||
+    !pathImplementation.isAbsolute(applicationExecutable) ||
+    !pathImplementation.isAbsolute(packagedContentRoot) ||
+    /[\0-\x1f\x7f]/.test(applicationExecutable) ||
+    /[\0-\x1f\x7f]/.test(packagedContentRoot)
+  ) {
+    throw new Error("Authenticode executable and package root must be absolute safe paths");
+  }
+  const packageRoot = pathImplementation.resolve(packagedContentRoot);
+  const executable = pathImplementation.resolve(applicationExecutable);
+  const relativeExecutable = pathImplementation.relative(packageRoot, executable);
+  if (
+    !relativeExecutable ||
+    relativeExecutable === ".." ||
+    relativeExecutable.startsWith(`..${pathImplementation.sep}`) ||
+    pathImplementation.isAbsolute(relativeExecutable) ||
+    relativeExecutable.includes(":") ||
+    relativeExecutable
+      .split(pathImplementation.sep)
+      .some((component) => !component || component === "." || component === "..")
+  ) {
+    throw new Error("Authenticode executable must be strictly inside the packaged content root");
+  }
+  const env = {};
+  for (const [key, value] of Object.entries(sourceEnvironment)) {
+    if (
+      value !== undefined &&
+      key.toUpperCase() !== authenticodeExecutableEnvironmentKey
+    ) {
+      env[key] = value;
+    }
+  }
+  env[authenticodeExecutableEnvironmentKey] = executable;
+  return {
+    command: "powershell.exe",
+    args: [
+      "-NoLogo",
+      "-NoProfile",
+      "-NonInteractive",
+      "-Command",
+      authenticodeInspectionScript,
+    ],
+    options: {
+      cwd: packageRoot,
+      encoding: "utf8",
+      env,
+      windowsHide: true,
+    },
+  };
+};
+
 export const parseCodesignDisplay = (output) => {
   const lines = String(output).split(/\r?\n/);
   const field = (name) =>
@@ -68,11 +141,50 @@ export const parseAuthenticodeJson = (output) => {
   if (!parsed || typeof parsed.Status !== "string") {
     throw new Error("PowerShell Authenticode output has no status");
   }
+  for (const field of ["StatusMessage", "SignerSubject", "SignerThumbprint"]) {
+    if (
+      !Object.hasOwn(parsed, field) ||
+      (parsed[field] !== null && typeof parsed[field] !== "string")
+    ) {
+      throw new Error(`PowerShell Authenticode output has invalid ${field}`);
+    }
+  }
   return {
     status: parsed.Status,
-    statusMessage: typeof parsed.StatusMessage === "string" ? parsed.StatusMessage : null,
-    signerSubject: typeof parsed.SignerSubject === "string" ? parsed.SignerSubject : null,
-    signerThumbprint:
-      typeof parsed.SignerThumbprint === "string" ? parsed.SignerThumbprint : null,
+    statusMessage: parsed.StatusMessage,
+    signerSubject: parsed.SignerSubject,
+    signerThumbprint: parsed.SignerThumbprint,
   };
+};
+
+export const assertAuthenticodeNotSigned = (authenticode) => {
+  if (
+    !authenticode ||
+    authenticode.status !== "NotSigned" ||
+    authenticode.signerSubject !== null ||
+    authenticode.signerThumbprint !== null
+  ) {
+    throw new Error(
+      `Windows application executable has or may have publisher signing: ${JSON.stringify(authenticode)}`,
+    );
+  }
+  return authenticode;
+};
+
+export const inspectUnsignedAuthenticode = (
+  input,
+  { spawnFunction = spawnSync } = {},
+) => {
+  const invocation = createAuthenticodeInspectionInvocation(input);
+  const completed = spawnFunction(
+    invocation.command,
+    invocation.args,
+    invocation.options,
+  );
+  if (completed.error || completed.status !== 0) {
+    throw new Error(
+      `PowerShell Authenticode inspection failed: ${completed.error?.message ?? ""}\n${completed.stdout ?? ""}${completed.stderr ?? ""}`,
+    );
+  }
+  return assertAuthenticodeNotSigned(parseAuthenticodeJson(completed.stdout));
 };

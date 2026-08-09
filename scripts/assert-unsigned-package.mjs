@@ -8,7 +8,7 @@ import { isForbiddenPackagedPath } from "./lib/unsigned-package-policy.mjs";
 import {
   assertExpectedMacMainExecutable,
   classifyMacCodeSigningResult,
-  parseAuthenticodeJson,
+  inspectUnsignedAuthenticode,
 } from "./lib/unsigned-signing-proof.mjs";
 
 const packageRoot = resolve(process.argv[2] ?? join(repositoryRoot, "electron", "out", "unsigned"));
@@ -115,29 +115,10 @@ if (process.platform === "darwin") {
     );
   }
   const applicationExecutable = topLevelExecutables[0];
-  const powershell = spawnSync(
-    "powershell.exe",
-    [
-      "-NoLogo",
-      "-NoProfile",
-      "-NonInteractive",
-      "-Command",
-      "$signature=Get-AuthenticodeSignature -LiteralPath $args[0]; [pscustomobject]@{Status=[string]$signature.Status;StatusMessage=$signature.StatusMessage;SignerSubject=if($signature.SignerCertificate){$signature.SignerCertificate.Subject}else{$null};SignerThumbprint=if($signature.SignerCertificate){$signature.SignerCertificate.Thumbprint}else{$null}} | ConvertTo-Json -Compress",
-      applicationExecutable,
-    ],
-    { encoding: "utf8" },
-  );
-  if (powershell.error || powershell.status !== 0) {
-    throw new Error(
-      `PowerShell Authenticode inspection failed: ${powershell.error?.message ?? ""}\n${powershell.stdout ?? ""}${powershell.stderr ?? ""}`,
-    );
-  }
-  const authenticode = parseAuthenticodeJson(powershell.stdout);
-  if (authenticode.status !== "NotSigned" || authenticode.signerSubject) {
-    throw new Error(
-      `Windows application executable has or may have publisher signing: ${JSON.stringify(authenticode)}`,
-    );
-  }
+  const authenticode = inspectUnsignedAuthenticode({
+    applicationExecutable,
+    packagedContentRoot,
+  });
   publisherSigningEvidence = {
     platform: "win32",
     status: "top-level application executable is not Authenticode signed",

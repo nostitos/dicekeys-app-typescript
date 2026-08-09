@@ -35,6 +35,7 @@ const manifestPaths = [
   "web/package-lock.json",
   "electron/package.json",
   "electron/package-lock.json",
+  "electron/electron-builder.unsigned.js",
   "electron-forge/package.json",
   "electron-forge/package-lock.json",
   "vendor/build-tools/package.json",
@@ -150,6 +151,13 @@ for (const name of ["pack", "pack:unsigned"]) {
   if (electronManifest.scripts?.[name] !== "node ../scripts/package-unsigned.mjs") {
     throw new Error(`electron npm script ${name} must use the cross-platform Node unsigned wrapper`);
   }
+}
+const unsignedBuilderConfigSource = await readFile(
+  join(repositoryRoot, "electron", "electron-builder.unsigned.js"),
+  "utf8",
+);
+if (!/\bsignAndEditExecutable:\s*false\b/.test(unsignedBuilderConfigSource)) {
+  throw new Error("unsigned Electron Builder config must disable Windows sign/edit tooling");
 }
 
 for (const npmrcPath of [

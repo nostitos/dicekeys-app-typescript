@@ -97,6 +97,7 @@ const unsigned = {
   },
   win: {
     ...baseWinWithoutCertificates,
+    signAndEditExecutable: false,
   },
 };
 
