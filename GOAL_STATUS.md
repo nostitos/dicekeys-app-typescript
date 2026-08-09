@@ -1,10 +1,10 @@
 # Goal Status
 
-Last updated: 2026-08-08
+Last updated: 2026-08-09
 
 ## Current state
 
-Phases 0, 1, 2, and 3 are complete and independently reviewed. `DK-BIP39-24-v1` is frozen on `codex/phase-1-freeze-profile`, the credential-free build foundation is complete on `codex/phase-2-public-build-foundation`, and the isolated derivation module is complete on `codex/phase-3-derivation-module`. Phase 4 UI work has not started.
+Phases 0, 1, 2, and 3 and the Phase 4 recovery foundation are complete and independently reviewed. `DK-BIP39-24-v1` is frozen on `codex/phase-1-freeze-profile`, the credential-free build foundation is complete on `codex/phase-2-public-build-foundation`, the isolated derivation module is complete on `codex/phase-3-derivation-module`, and the reviewed recovery foundation is on `codex/phase-4-recovery-foundation`. User-facing recovery UI work has not started.
 
 | Item | State | Evidence |
 | --- | --- | --- |
@@ -31,6 +31,9 @@ Phases 0, 1, 2, and 3 are complete and independently reviewed. `DK-BIP39-24-v1` 
 | Credential-free clean-machine proof | Complete | A new Linux/amd64 container with Node 22.23.2/npm 10.9.8 completed empty-cache bootstrap, all checks, and an unsigned build without private package credentials |
 | Network-denied cache replay | Complete | A separate Docker run with `--network none` had no default route, returned `ENETUNREACH` for direct HTTPS, and passed offline bootstrap/check/build; all 14 checksum-bound evidence files matched the online run |
 | Phase 3 derivation module | Complete and independently reviewed | The cache-free profile API validates exactly 25 faces, canonicalizes through the existing rotation primitive, derives with the exact frozen recipe, exposes only immutable mnemonic metadata, and keeps the reversible codec unreachable; all 27 vectors/108 rotations and 14 Jest suites/1,712 tests pass |
+| Recovery profile check code | Complete and independently reviewed | Separate SHA-256/48-bit comparison metadata is frozen in its own spec and vectors, independently implemented in Python and TypeScript, and kept outside the BIP32/profile-output contract |
+| Wallet scanner foundation | Complete and independently reviewed | Opt-in wallet mode owns a per-attempt worker/native session, fails closed on acquisition uncertainty, sanitizes face output, avoids global stores, correlates replies, makes capture inert before callback, and exposes one bounded cleanup settlement |
+| Recovery flow foundation | Complete and independently reviewed | Pure state/comparison/backup modules enforce two distinct scans, fixed scanner-attempt failure handling, confirmed acquisition-release gates, all-four-rotation comparison, concealed derivation, explicit reveal, unbiased verification, and absorbing clear; combined checks pass 10 Python tests and 19 Jest suites/1,843 tests |
 
 ## Gate summary
 
@@ -38,7 +41,10 @@ Phases 0, 1, 2, and 3 are complete and independently reviewed. `DK-BIP39-24-v1` 
 - Phase 1: passed independent review with no unresolved findings.
 - Phase 2: passed. Credential-free empty-cache acquisition, full verification, unsigned evaluation packaging, deterministic evidence, and operating-system-denied offline replay all passed independent review with no unresolved finding.
 - Phase 3: passed. Independent review found and closed malformed-face coercion and an unnecessary seeded-crypto byte-copy lifetime; strict validation, cleanup-error paths, exact vectors, and same-module browser/Electron build-mode behavior now pass with no unresolved finding.
-- Phases 4 through 7: not started.
+- Phase 4: foundation passed independent review with no unresolved finding;
+  the user-facing wizard, navigation, visual QA, and packaged runtime E2E have
+  not started.
+- Phases 5 through 7: not started.
 
 ## Known blockers
 
@@ -47,4 +53,7 @@ Phases 0, 1, 2, and 3 are complete and independently reviewed. `DK-BIP39-24-v1` 
 - Seeded and scanner generated WASM build environments are not fully pinned or reproducible; scanner CMake also embeds a developer-local OpenCV path.
 - `keytar@7.9.0` is archived and its prebuild installer does not content-verify downloaded native archives. Electron 29 is unsupported. Both must be replaced, upgraded, or brought under verified source-build control before release.
 - Current Electron entitlements and signed/notarized packaging are not wallet-release ready. Phase 2 artifacts are local, unsigned, and explicitly `releaseEligible: false`.
-- Phase 4 must define the verification fingerprint's bytes, algorithm, length, encoding, purpose, and privacy behavior before displaying one; the committed BIP32 fingerprint must not be silently repurposed.
+- D-020 now defines the separate Recovery profile check code. The future UI
+  must explain that it is comparison-only and privacy-linkable, must not
+  persist or transmit it, and must not present it as authentication, ownership,
+  a unique wallet identifier, or the BIP32 fingerprint.

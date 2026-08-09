@@ -1,0 +1,65 @@
+{
+  "schema": "RecoveryProfileCheckCode-v1-test-vectors",
+  "schemaVersion": 1,
+  "status": "phase4-review-candidate",
+  "label": "Recovery profile check code v1",
+  "profile": "DK-BIP39-24-v1",
+  "domainAscii": "DiceKeys/RecoveryProfileCheckCode/v1",
+  "preimagePrefixHex": "446963654b6579732f5265636f7665727950726f66696c65436865636b436f64652f763100444b2d42495033392d32342d763100",
+  "digestAlgorithm": "SHA-256",
+  "codeByteLength": 6,
+  "displayFormat": "uppercase hexadecimal grouped 4-4-4",
+  "sourceMnemonicArtifact": "test-vectors.json",
+  "bip39EnglishWordList": {
+    "entryCount": 2048,
+    "lfTerminatedAsciiByteLength": 13116,
+    "lfTerminatedAsciiSha256": "2f5eed53a4727b4bf8880d8f3f199efc90e58503646d9ff8eff3a2ed3b24dbda"
+  },
+  "vectorCount": 27,
+  "physicalRotationAssociationCount": 108,
+  "negativeControls": {
+    "changedProfileForV01": {
+      "profile": "DK-BIP39-24-v2",
+      "fullDigestHex": "df487d4f2c4650fb23f34c667b1e12e24cf3bfa885c1ae9432bc4eeca61119fb",
+      "displayCheckCode": "DF48-7D4F-2C46"
+    },
+    "strictlyRejectedMnemonicEncodings": [
+      "leading ASCII space",
+      "trailing ASCII space",
+      "two ASCII spaces between words",
+      "tab between words",
+      "line break between words",
+      "non-breaking space between words",
+      "uppercase word"
+    ]
+  },
+  "vectors": {
+    "V01": {"fullDigestHex": "521cbb8cfd07d4e44f94d70c2af68d2606bab17317de71553100af1488cde7cd", "checkCodeHex": "521CBB8CFD07", "displayCheckCode": "521C-BB8C-FD07"},
+    "V02": {"fullDigestHex": "2ca7f108ea187dda63bfe5b1971efe89359d282b17fbdb0423b688ae9a3f85b5", "checkCodeHex": "2CA7F108EA18", "displayCheckCode": "2CA7-F108-EA18"},
+    "V03": {"fullDigestHex": "f6e5bdef7e61747f6de99a69c6b33d59d0569d37419d857574a6abd9b95806db", "checkCodeHex": "F6E5BDEF7E61", "displayCheckCode": "F6E5-BDEF-7E61"},
+    "V04": {"fullDigestHex": "e34f8bfeab39622163eb34d80838f29dcfefc9fa6c8b6b5b0e077196577f5c9c", "checkCodeHex": "E34F8BFEAB39", "displayCheckCode": "E34F-8BFE-AB39"},
+    "V05": {"fullDigestHex": "6a8c74ca6f96fea5d92c99c9d7e59f82a324bb15f0879a2483fdb05714e59e24", "checkCodeHex": "6A8C74CA6F96", "displayCheckCode": "6A8C-74CA-6F96"},
+    "V06": {"fullDigestHex": "841c34dbd3650002d0d4e352db0ee80a96d83b0346e17b7f28b3c4830932daf4", "checkCodeHex": "841C34DBD365", "displayCheckCode": "841C-34DB-D365"},
+    "V07": {"fullDigestHex": "24b5ca30699a3f6a2501235fee9b1562d6914db779a206d790a5187b29c9e6fe", "checkCodeHex": "24B5CA30699A", "displayCheckCode": "24B5-CA30-699A"},
+    "V08": {"fullDigestHex": "32570f6bfc678cadc3c6f45d97196828a0b834b4e4beb2f0f1c4f1f32833d2cd", "checkCodeHex": "32570F6BFC67", "displayCheckCode": "3257-0F6B-FC67"},
+    "V09": {"fullDigestHex": "272310eda250aa37ccff6e039a3fa5f6cc18807376b603e4f8fb16cd6ad5c4ce", "checkCodeHex": "272310EDA250", "displayCheckCode": "2723-10ED-A250"},
+    "V10": {"fullDigestHex": "130920eae71cffba82ba708634a91680d7eb0fe64178969f096b45cdb426161f", "checkCodeHex": "130920EAE71C", "displayCheckCode": "1309-20EA-E71C"},
+    "V11": {"fullDigestHex": "c0835078c14e41e70cd6a5cc5978c97d429631f1c2d69435e41cb6d3b8d3ee2b", "checkCodeHex": "C0835078C14E", "displayCheckCode": "C083-5078-C14E"},
+    "V12": {"fullDigestHex": "1a43b998c1e9f32d72b9058156922ae58e0b2eb43fb9a27bbac07ad4a939e67a", "checkCodeHex": "1A43B998C1E9", "displayCheckCode": "1A43-B998-C1E9"},
+    "V13": {"fullDigestHex": "6b20c2e004e31e09a2fbdaebae09cf634ff92936e971d4b6e17886cff26b9c3a", "checkCodeHex": "6B20C2E004E3", "displayCheckCode": "6B20-C2E0-04E3"},
+    "V14": {"fullDigestHex": "824bce0248abfe744eb3517c4ffcea969ec9f1ac04975d27ea240763acd215c3", "checkCodeHex": "824BCE0248AB", "displayCheckCode": "824B-CE02-48AB"},
+    "V15": {"fullDigestHex": "0f784f41defec65ecdfac3046b0563bbf4637986baf6d4d27ee9357850b43fd1", "checkCodeHex": "0F784F41DEFE", "displayCheckCode": "0F78-4F41-DEFE"},
+    "V16": {"fullDigestHex": "c4ad793a4d4066673ec5ca8351fdf582924ba6d39c7fd73f506b7fde28ded25d", "checkCodeHex": "C4AD793A4D40", "displayCheckCode": "C4AD-793A-4D40"},
+    "V17": {"fullDigestHex": "4cd78acefc869629f57e9268402f814dcae45717cc23bfd96ac3ced5c2249e3c", "checkCodeHex": "4CD78ACEFC86", "displayCheckCode": "4CD7-8ACE-FC86"},
+    "V18": {"fullDigestHex": "59b670d7d8b48a85b3a2a97d1b9eb359b53adb1541e7f780d88809aeeb52ba7b", "checkCodeHex": "59B670D7D8B4", "displayCheckCode": "59B6-70D7-D8B4"},
+    "V19": {"fullDigestHex": "8a8403683c4951449f9759d44daa66bad94e9e0e808d145ddd25835fc73c679a", "checkCodeHex": "8A8403683C49", "displayCheckCode": "8A84-0368-3C49"},
+    "V20": {"fullDigestHex": "18db828659589876c36126de95ecb6c4d01de00ebb51522a1383bd91000fe16b", "checkCodeHex": "18DB82865958", "displayCheckCode": "18DB-8286-5958"},
+    "V21": {"fullDigestHex": "f2e12bf3e2f6e007727ebdd5c4aa5a7570202b4e691faab3257ec31aba94907f", "checkCodeHex": "F2E12BF3E2F6", "displayCheckCode": "F2E1-2BF3-E2F6"},
+    "V22": {"fullDigestHex": "cbc213ac9e2d73770809c5a31bcd3703dac5ca7b4ddd9860e0f98b1f058d045b", "checkCodeHex": "CBC213AC9E2D", "displayCheckCode": "CBC2-13AC-9E2D"},
+    "V23": {"fullDigestHex": "b8d91685f6548e5b6b451c0839d644543e4c9b25a003bc96c11750e4971c61a9", "checkCodeHex": "B8D91685F654", "displayCheckCode": "B8D9-1685-F654"},
+    "V24": {"fullDigestHex": "57bc8274003b9849bb11beb955939f4f13802a982a90d3cfb62124ead7fd3a88", "checkCodeHex": "57BC8274003B", "displayCheckCode": "57BC-8274-003B"},
+    "V25": {"fullDigestHex": "78ab6e0263b366f1c1887b0fd2c8a50fb18ae24ab13a0a3485f55a9746094b9c", "checkCodeHex": "78AB6E0263B3", "displayCheckCode": "78AB-6E02-63B3"},
+    "V26": {"fullDigestHex": "37f7a25c9ff4396b24dc7323572c232cf3a7782ab64460c2ed8965a0fa811f14", "checkCodeHex": "37F7A25C9FF4", "displayCheckCode": "37F7-A25C-9FF4"},
+    "V27": {"fullDigestHex": "61bfcfa3ffc7790e9c36af7343fea1e2d44927b121a7eaeb359d3dfb70424b4b", "checkCodeHex": "61BFCFA3FFC7", "displayCheckCode": "61BF-CFA3-FFC7"}
+  }
+}

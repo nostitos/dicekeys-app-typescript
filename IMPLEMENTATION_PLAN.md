@@ -1,7 +1,7 @@
 # Implementation Plan
 
-Status: Phases 0, 1, 2, and 3 complete; Phase 4 not started
-Last updated: 2026-08-08
+Status: Phases 0, 1, 2, and 3 plus the Phase 4 recovery foundation complete and independently reviewed; user-facing UI not started
+Last updated: 2026-08-09
 
 ## Working model
 
@@ -65,12 +65,27 @@ web, Electron, and Forge builds.
 
 The build-mode regression proves that fresh browser-mode and Electron-mode
 module loads produce the same fixed result. Actual browser and packaged
-Electron runtime execution remains a Phase 6 E2E gate. A verification
-fingerprint remains deliberately undefined and deferred under D-018.
+Electron runtime execution remains a Phase 6 E2E gate. D-020 now separately
+defines the presentation-only Recovery profile check code without changing the
+Phase 3 derivation result or repurposing BIP32 metadata.
 
 ## Phase 4: dedicated recovery flow
 
-Deliverables: explanation, two independent scans, mismatch display, profile/fingerprint confirmation, explicit reveal, stable numbered words, backup verification, and clear/exit behavior.
+Deliverables: explanation, two independent scans, mismatch display, profile and
+Recovery profile check-code confirmation, explicit reveal, stable numbered
+words, backup verification, and clear/exit behavior.
+
+Foundation result: passed independent review separately from the React wizard.
+It freezes
+the check-code specification and independent references; introduces an opt-in,
+per-attempt wallet scanner session with strict uncertainty and bounded cleanup
+policy; and provides a pure recovery state machine for two distinct,
+attempt-bound acquisitions, confirmed release gates, four-rotation comparison,
+concealed derivation, explicit reveal, unbiased backup challenges, and
+absorbing clear. The combined candidate passes 10
+Python reference tests and 19 Jest suites/1,843 tests with no skipped or todo
+work. The final whole-change review reported zero findings. No navigation or
+user-facing recovery screen is included yet.
 
 Gate: the user flow satisfies `PRD.md` without the excluded wallet/network features.
 

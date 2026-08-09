@@ -10,14 +10,13 @@ interface CameraSelectionViewProps {
 export const CameraSelectionView = observer ( (props: React.PropsWithoutRef<CameraSelectionViewProps>) => {
   const {cameras, mediaStreamState} = props;
   const {deviceId, defaultDevice} = mediaStreamState;
-  if (deviceId == null && defaultDevice != null) {
-    mediaStreamState.setCamera(defaultDevice);
-  }
   if (cameras.length <= 1) return null;
 
   return (
     <CenteredControls>
-      <select value={deviceId ?? defaultDevice?.deviceId} onChange={ (e) => mediaStreamState.setDeviceId(e.target.value)} >
+      <select value={deviceId ?? defaultDevice?.deviceId} onChange={ (e) => {
+        void mediaStreamState.setDeviceId(e.target.value).catch(() => {});
+      }} >
         { cameras.map( camera => (
           <option key={camera.deviceId} value={camera.deviceId} >{ camera.name }</option>
         ))}

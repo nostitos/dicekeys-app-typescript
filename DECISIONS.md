@@ -1,6 +1,6 @@
 # Decision Log
 
-Last updated: 2026-08-08
+Last updated: 2026-08-09
 
 ## D-001: one wallet profile
 
@@ -137,7 +137,7 @@ Credential-free installation and an unsigned local package are necessary but ins
 ## D-018: verification fingerprint is a Phase 4 decision
 
 Date: 2026-08-08
-State: accepted Phase 3 scope boundary
+State: accepted Phase 3 scope boundary; resolved for presentation metadata by D-020
 
 The isolated Phase 3 derivation result exposes the profile identifier, an
 immutable 24-word array, and the mnemonic string. It does not invent or expose
@@ -177,3 +177,73 @@ lifetime and clear all application references honestly.
 Browser-mode and Electron-mode isolated loads must produce the same committed
 anchor, but that test is not a substitute for packaged runtime E2E. Full web
 and Electron execution remains part of the Phase 6 release-candidate gate.
+
+## D-020: use a separate Recovery profile check code
+
+Date: 2026-08-09
+State: accepted, implemented, and independently reviewed in the Phase 4 foundation
+
+The flow uses a `Recovery profile check code v1`, not a wallet or BIP32
+fingerprint. Its exact preimage is the UTF-8 bytes of
+`DiceKeys/RecoveryProfileCheckCode/v1`, one zero byte, the UTF-8 bytes of
+`DK-BIP39-24-v1`, one zero byte, and the exact canonical 24-word mnemonic with
+single ASCII spaces. SHA-256 is applied once; the first six digest bytes are
+rendered as twelve uppercase hexadecimal characters in three four-character
+groups: `XXXX-XXXX-XXXX`.
+
+The normative definition, public synthetic vectors, and independent Python
+and TypeScript references live in `spec/RecoveryProfileCheckCode-v1.md` and
+`spec/recovery-profile-check-code-v1-test-vectors.json`. The production API
+accepts only the exact frozen Phase 3 result and returns only the formatted
+code. It exposes no domain, profile, mnemonic, digest, truncation, or formatting
+override.
+
+This code is a short comparison aid for detecting that independently obtained
+recovery material differs. It is not authentication, ownership proof, a unique
+wallet identifier, an error-correcting checksum, or a substitute for comparing
+and backing up all 24 words. A random different derivation has a one-in-2^48
+chance of sharing the code. Because the value is deterministic and therefore
+linkable, the wallet flow must not log, persist, transmit, copy, or place it in
+URLs. This decision does not change `DK-BIP39-24-v1` derivation bytes or the
+Phase 1 vector corpus and does not repurpose the BIP32 fingerprint in D-010.
+
+## D-021: wallet recovery owns an isolated acquisition session
+
+Date: 2026-08-09
+State: accepted, implemented, and independently reviewed in the Phase 4 foundation
+
+Wallet recovery opts into a dedicated scanner mode while the legacy scanner
+remains the default for existing application flows. An exact 25-face reading
+may advance; bit-read uncertainty requires explicit review; incomplete,
+no-majority, OCR-ambiguous, or wallet-invalid readings require a rescan. The
+wallet path receives only sanitized letter, digit, and orientation fields and
+must not write the DiceKey or center orientation to global application stores.
+
+Each mounted scan attempt owns a distinct worker, native image processor,
+opaque session identifier, and monotonically increasing request identifier.
+Replies must match all correlation fields. A terminal candidate is bound to
+that exact attempt and makes camera, grabber, processor, media, callbacks, and
+new requests inert before external code receives it. The flow enters an
+explicit releasing state and may not advance to the physical break, comparison,
+or derivation until the attempt's stable cleanup settlement resolves.
+
+A worker bootstrap rejection, active processing rejection, or resolved WASM
+exception before a candidate exists is also terminal in wallet mode. Capture is
+made inert first, then external code receives only the fixed frozen result
+`{status: "failed", reason: "scanner-attempt-failed"}` bound to the same cleanup
+handle. The flow records `ACQUISITION_FAILED`; cleanup rejection instead
+escalates to `ACQUISITION_DISPOSAL_FAILED`. Legacy scanner error behavior is
+unchanged.
+
+Cooperative cleanup wipes owned request/response buffers, deletes native state,
+acknowledges the exact session, and then terminates the worker. If cleanup
+cannot be confirmed within five seconds, or a worker/post/delete error occurs,
+the main-thread copies and references are already cleared and the isolated
+worker realm is terminated, but settlement rejects as
+`ACQUISITION_DISPOSAL_FAILED`. The application must not claim that the fallback
+explicitly overwrote worker memory or ran native deletion. It must never
+advance using that acquisition. The two recovery readings must use distinct
+attempt identities and objects before comparison across all four physical
+rotations. These foundation rules do not themselves make the recovery flow
+user-facing; the dedicated wizard and packaged runtime E2E remain separate
+gates.

@@ -1,7 +1,7 @@
 # Security Review
 
-Status: Phase 1 compatibility, Phase 2 build/supply-chain, and Phase 3 derivation reviews complete; application adversarial review not started
-Last updated: 2026-08-08
+Status: Phase 1 compatibility, Phase 2 build/supply-chain, Phase 3 derivation, and Phase 4 recovery-foundation reviews complete; application adversarial review not started
+Last updated: 2026-08-09
 
 No item in this file is an approval of the current application for wallet recovery.
 
@@ -93,8 +93,63 @@ The browser/Electron test proves equal results from isolated module loads under
 both build-mode constants and verifies that the profile module has no platform
 dependency. It is not packaged-renderer E2E evidence; actual web and Electron
 runtime execution, active-flow network denial, UI state clearing, and mnemonic
-string-lifecycle review remain later gates. No verification fingerprint is
-implemented because its normative and privacy semantics are not yet defined.
+string-lifecycle review remain later gates. D-020 now defines a separate
+presentation-only Recovery profile check code; it does not modify the Phase 3
+derivation result or repurpose BIP32 metadata.
+
+## Phase 4 recovery-foundation review
+
+The approved foundation deliberately separates its invariants from the later
+React wizard. `Recovery profile check code v1` has an independent normative
+specification, public vector artifact, Python reference, standalone TypeScript
+reference, and narrow production API. It is domain- and profile-separated from
+the canonical mnemonic, truncated to 48 bits, and labeled only as a comparison
+aid. It is not BIP32 metadata or authentication, and its stable, linkable value
+is subject to the same no-log, no-persist, and no-transmit flow policy as the
+mnemonic.
+
+The scanner candidate adds an opt-in wallet mode without changing the legacy
+default. It never accepts acquisition errors silently: bit-read uncertainty is
+returned for explicit review, while incomplete, no-majority, OCR-ambiguous,
+or invalid readings require a rescan. Each attempt owns correlated worker,
+native processor, session, and request state. Terminal delivery is bound to the
+actual attempt and synchronously makes the grabber, media, processor, callbacks,
+and new requests inert before invoking external code. Sanitized wallet results
+do not write DiceKey material or center orientation to global stores.
+
+The flow has explicit first- and second-acquisition releasing states. It cannot
+advance to the physical break, comparison, or derivation until the attempt's
+cleanup settlement resolves. The cooperative path wipes owned frame and face
+image buffers, deletes native state, receives the exact cleanup acknowledgement,
+and terminates the worker. A five-second timeout or worker/post/delete failure
+terminates the isolated worker after main-thread references have been cleared,
+rejects the settlement, and fails the flow with a fixed disposal code. That
+fallback does not claim that worker memory was explicitly overwritten or that
+native deletion ran.
+
+Pre-terminal worker bootstrap/processing rejection and resolved WASM exceptions
+use the same attempt-bound teardown. Wallet mode emits only the fixed frozen
+`scanner-attempt-failed` result after capture is inert. The flow maps it to
+`ACQUISITION_FAILED`, escalates an unconfirmed cleanup to
+`ACQUISITION_DISPOSAL_FAILED`, and never remains in a live camera loop. Consumer
+throws and stale rejection/response races across unmount or StrictMode remount
+cannot generate a second completion. Legacy scanner behavior is preserved.
+
+The pure recovery state machine requires two distinct attempt identities and
+confirmed cleanup settlements, compares all four rotations without guessing
+tied alignments, drops face
+references before derivation, retains words publicly only in the explicit
+revealed state, uses unbiased WebCrypto sampling for backup challenges, maps
+errors to fixed codes, invalidates stale async completions, and makes clear an
+absorbing state. The combined candidate currently passes 10 Python reference
+tests and 19 Jest suites/1,843 tests with no skipped, todo, or snapshot work.
+
+Fresh read-only reviewers approved the integrated foundation with zero
+unresolved findings after all review-discovered boundary and lifecycle defects
+were fixed. This is not approval of a wallet UI or runtime. Navigation, rendering,
+camera permission UX, visual review, actual browser and packaged Electron E2E,
+network denial across the active flow, built-artifact inspection, and final
+mnemonic string-lifetime review remain open.
 
 ## Phase 0 observations
 
