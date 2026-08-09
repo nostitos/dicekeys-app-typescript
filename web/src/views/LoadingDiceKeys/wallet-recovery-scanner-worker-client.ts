@@ -26,7 +26,14 @@ export interface DiceKeyFrameWorkerClientOptions {
   readonly createSessionId?: () => string;
   readonly createFrameBuffer?: (source: Uint8ClampedArray) => ScannerOwnedFrameBuffer;
   readonly cleanupTimeoutMs?: number;
+  /** Undefined preserves the legacy unbounded readiness behavior. */
+  readonly workerReadyTimeoutMs?: number;
+  /** Undefined preserves the legacy unbounded per-frame behavior. */
+  readonly frameResponseTimeoutMs?: number;
 }
+
+export const WALLET_RECOVERY_WORKER_READY_TIMEOUT_MS = 15000;
+export const WALLET_RECOVERY_FRAME_RESPONSE_TIMEOUT_MS = 10000;
 
 export class ScannerWorkerCleanupUnconfirmedError extends Error {
   readonly name = "ScannerWorkerCleanupUnconfirmedError";
@@ -39,6 +46,7 @@ export class ScannerWorkerCleanupUnconfirmedError extends Error {
 type PendingFrameRequest = {
   readonly resolve: (response: ProcessFrameResponse) => void;
   readonly reject: (error: Error) => void;
+  readonly timeout?: ReturnType<typeof setTimeout>;
 };
 
 let nextScannerSessionNumber = 1;
@@ -48,6 +56,17 @@ const createScannerSessionId = (): string => {
   if (randomUuid != null) return `dicekey-scan-${randomUuid}`;
   const sessionNumber = nextScannerSessionNumber++;
   return `dicekey-scan-${Date.now().toString(36)}-${sessionNumber.toString(36)}`;
+};
+
+const validateOptionalTimeout = (
+  timeoutMs: number | undefined,
+  name: string,
+): number | undefined => {
+  if (timeoutMs == null) return undefined;
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
+    throw new RangeError(`${name} must be a positive finite number`);
+  }
+  return timeoutMs;
 };
 
 const isRecord = (candidate: unknown): candidate is Record<string, unknown> =>
@@ -90,6 +109,8 @@ export class DiceKeyFrameWorkerClient {
   private readonly worker: ScannerWorkerLike;
   private readonly sessionId: string;
   private readonly cleanupTimeoutMs: number;
+  private readonly workerReadyTimeoutMs?: number;
+  private readonly frameResponseTimeoutMs?: number;
   private nextRequestId = 1;
   private disposed = false;
   private workerTerminated = false;
@@ -97,6 +118,7 @@ export class DiceKeyFrameWorkerClient {
   private readyResolve!: () => void;
   private readyReject!: (error: Error) => void;
   private readonly workerReadyPromise: Promise<void>;
+  private workerReadyTimeout?: ReturnType<typeof setTimeout>;
   private workerFailure?: Error;
   private hasPostedFrameRequest = false;
   private readonly ownedFrameBuffers = new Set<ScannerOwnedFrameBuffer>();
@@ -113,14 +135,28 @@ export class DiceKeyFrameWorkerClient {
     return this.sessionId;
   }
 
+  get readiness(): Promise<void> {
+    return this.workerReadyPromise;
+  }
+
   constructor({
     createWorker,
     createSessionId = createScannerSessionId,
     createFrameBuffer = (source) => new ScannerOwnedFrameBuffer(source),
     cleanupTimeoutMs = 5000,
+    workerReadyTimeoutMs,
+    frameResponseTimeoutMs,
   }: DiceKeyFrameWorkerClientOptions) {
     this.sessionId = createSessionId();
     this.cleanupTimeoutMs = cleanupTimeoutMs;
+    this.workerReadyTimeoutMs = validateOptionalTimeout(
+      workerReadyTimeoutMs,
+      "workerReadyTimeoutMs",
+    );
+    this.frameResponseTimeoutMs = validateOptionalTimeout(
+      frameResponseTimeoutMs,
+      "frameResponseTimeoutMs",
+    );
     this.createFrameBuffer = createFrameBuffer;
     this.workerReadyPromise = new Promise<void>((resolve, reject) => {
       this.readyResolve = resolve;
@@ -134,13 +170,47 @@ export class DiceKeyFrameWorkerClient {
       this.worker.addEventListener("message", this.handleWorkerMessage);
       this.worker.addEventListener("error", this.handleWorkerFailure);
       this.worker.addEventListener("messageerror", this.handleWorkerFailure);
+      if (this.workerReadyTimeoutMs != null) {
+        this.workerReadyTimeout = setTimeout(() => {
+          if (this.workerReady || this.disposed || this.workerFailure != null) {
+            return;
+          }
+          this.failWorker(new Error(
+            "DiceKey scanner worker readiness timed out",
+          ));
+        }, this.workerReadyTimeoutMs);
+      }
     } catch (error) {
+      this.clearWorkerReadyTimeout();
       this.removeWorkerListeners();
       this.workerTerminated = true;
       try { this.worker.terminate(); } catch {}
       throw error;
     }
   }
+
+  private clearWorkerReadyTimeout = (): void => {
+    if (this.workerReadyTimeout != null) {
+      clearTimeout(this.workerReadyTimeout);
+    }
+    this.workerReadyTimeout = undefined;
+  };
+
+  private takePendingFrameRequest = (
+    requestId: number,
+  ): PendingFrameRequest | undefined => {
+    const pendingRequest = this.pendingFrameRequests.get(requestId);
+    if (pendingRequest == null) return undefined;
+    this.pendingFrameRequests.delete(requestId);
+    if (pendingRequest.timeout != null) clearTimeout(pendingRequest.timeout);
+    return pendingRequest;
+  };
+
+  private rejectPendingFrameRequests = (error: Error): void => {
+    [...this.pendingFrameRequests.keys()].forEach((requestId) => {
+      this.takePendingFrameRequest(requestId)?.reject(error);
+    });
+  };
 
   private handleWorkerMessage: EventListener = (event): void => {
     const { data } = event as MessageEvent<unknown>;
@@ -166,6 +236,7 @@ export class DiceKeyFrameWorkerClient {
     if (isReadyMessage(data)) {
       if (!this.workerReady) {
         this.workerReady = true;
+        this.clearWorkerReadyTimeout();
         this.readyResolve();
         this.readyResolve = () => {};
         this.readyReject = () => {};
@@ -177,24 +248,23 @@ export class DiceKeyFrameWorkerClient {
       wipeScannerFaceImageResponse(data);
       return;
     }
-    const pendingRequest = this.pendingFrameRequests.get(data.requestId);
+    const pendingRequest = this.takePendingFrameRequest(data.requestId);
     if (pendingRequest == null) {
       wipeScannerFaceImageResponse(data);
       return;
     }
-    this.pendingFrameRequests.delete(data.requestId);
     pendingRequest.resolve(data);
   };
 
   private failWorker = (error: Error): void => {
     if (this.workerTerminated) return;
+    this.clearWorkerReadyTimeout();
     if (this.workerFailure == null) {
       this.workerFailure = error;
       this.readyReject(error);
       this.readyResolve = () => {};
       this.readyReject = () => {};
-      this.pendingFrameRequests.forEach(({ reject }) => reject(error));
-      this.pendingFrameRequests.clear();
+      this.rejectPendingFrameRequests(error);
     }
     if (this.hasPostedFrameRequest) {
       if (this.terminationFailed != null || this.disposePromise != null) {
@@ -251,7 +321,15 @@ export class DiceKeyFrameWorkerClient {
         rgbImageAsArrayBuffer,
       };
       const responsePromise = new Promise<ProcessFrameResponse>((resolve, reject) => {
-        this.pendingFrameRequests.set(requestId, { resolve, reject });
+        const timeout = this.frameResponseTimeoutMs == null
+          ? undefined
+          : setTimeout(() => {
+              if (!this.pendingFrameRequests.has(requestId)) return;
+              this.failWorker(new Error(
+                "DiceKey scanner frame response timed out",
+              ));
+            }, this.frameResponseTimeoutMs);
+        this.pendingFrameRequests.set(requestId, { resolve, reject, timeout });
       });
       try {
         // Transfer only the dedicated owned copy. The source ImageData was
@@ -264,7 +342,7 @@ export class DiceKeyFrameWorkerClient {
         this.ownedFrameBuffers.delete(ownedFrameBuffer);
         ownedFrameBuffer = undefined;
       } catch (error) {
-        this.pendingFrameRequests.delete(requestId);
+        this.takePendingFrameRequest(requestId);
         throw error;
       }
       return await responsePromise;
@@ -286,6 +364,7 @@ export class DiceKeyFrameWorkerClient {
   private terminateWorkerExactlyOnce = (): void => {
     if (this.workerTerminated) return;
     this.workerTerminated = true;
+    this.clearWorkerReadyTimeout();
     this.removeWorkerListeners();
     this.worker.terminate();
   };
@@ -297,12 +376,12 @@ export class DiceKeyFrameWorkerClient {
   dispose = (): Promise<void> => {
     if (this.disposePromise != null) return this.disposePromise;
     this.disposed = true;
+    this.clearWorkerReadyTimeout();
     const disposedError = new Error("DiceKey scanner session has been disposed");
     this.readyResolve();
     this.readyResolve = () => {};
     this.readyReject = () => {};
-    this.pendingFrameRequests.forEach(({ reject }) => reject(disposedError));
-    this.pendingFrameRequests.clear();
+    this.rejectPendingFrameRequests(disposedError);
     this.ownedFrameBuffers.forEach((ownedFrameBuffer) => {
       ownedFrameBuffer.dispose();
     });

@@ -4,12 +4,12 @@ import {
   TopNavigationBar,
   TopNavLeftSide, TopNavCenter, TopNavRightSide
 } from "./Navigation/NavigationLayout";
-import { WindowTopLevelNavigationState } from "../state/Window";
+import type { WindowTopLevelNavigationState } from "../state/Window";
 import { BooleanState } from "../state/reusable/BooleanState";
 import { DiceKeyWithKeyId } from "../dicekeys/DiceKey";
 import { DiceKeysNavHamburgerMenu, ExpandableMenuProps, HamburgerMenuButton, MenuItem } from "./Navigation/Menu";
 import { RUNNING_IN_BROWSER } from "../utilities/is-electron";
-import { DiceKeyMemoryStore } from "../state";
+import { DiceKeyMemoryStore } from "../state/stores/DiceKeyMemoryStore";
 import { AppStoreName, OperatingSystemName } from "../utilities/OperatingSystemAndAppStoreName";
 import { downloadOrNavigateToAppStore } from "../utilities/AppStoreLink";
 

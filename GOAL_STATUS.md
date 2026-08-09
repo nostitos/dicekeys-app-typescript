@@ -4,7 +4,7 @@ Last updated: 2026-08-09
 
 ## Current state
 
-Phases 0, 1, 2, and 3 and the Phase 4 recovery foundation are complete and independently reviewed. `DK-BIP39-24-v1` is frozen on `codex/phase-1-freeze-profile`, the credential-free build foundation is complete on `codex/phase-2-public-build-foundation`, the isolated derivation module is complete on `codex/phase-3-derivation-module`, and the reviewed recovery foundation is on `codex/phase-4-recovery-foundation`. User-facing recovery UI work has not started.
+Phases 0 through 4 are complete and independently reviewed. `DK-BIP39-24-v1` is frozen on `codex/phase-1-freeze-profile`, the credential-free build foundation is complete on `codex/phase-2-public-build-foundation`, the isolated derivation module is complete on `codex/phase-3-derivation-module`, the recovery foundation is on `codex/phase-4-recovery-foundation`, and the dedicated user-facing flow is on `codex/phase-4-wallet-recovery-ui`.
 
 | Item | State | Evidence |
 | --- | --- | --- |
@@ -34,6 +34,7 @@ Phases 0, 1, 2, and 3 and the Phase 4 recovery foundation are complete and indep
 | Recovery profile check code | Complete and independently reviewed | Separate SHA-256/48-bit comparison metadata is frozen in its own spec and vectors, independently implemented in Python and TypeScript, and kept outside the BIP32/profile-output contract |
 | Wallet scanner foundation | Complete and independently reviewed | Opt-in wallet mode owns a per-attempt worker/native session, fails closed on acquisition uncertainty, sanitizes face output, avoids global stores, correlates replies, makes capture inert before callback, and exposes one bounded cleanup settlement |
 | Recovery flow foundation | Complete and independently reviewed | Pure state/comparison/backup modules enforce two distinct scans, fixed scanner-attempt failure handling, confirmed acquisition-release gates, all-four-rotation comparison, concealed derivation, explicit reveal, unbiased verification, and absorbing clear; combined checks pass 10 Python tests and 19 Jest suites/1,843 tests |
+| Dedicated recovery UI | Complete and independently reviewed | The primary home action and constant route render every foundation state; camera authority is registered before access, two attempt-bound scans gate derivation, recovery words require explicit reveal and local backup verification, clear reaches an honest neutral receipt, and the UI exposes none of the excluded wallet/network/export features; the current check passes 10 Python tests and 23 Jest suites/1,998 tests plus web, Electron, and Forge builds |
 
 ## Gate summary
 
@@ -41,10 +42,12 @@ Phases 0, 1, 2, and 3 and the Phase 4 recovery foundation are complete and indep
 - Phase 1: passed independent review with no unresolved findings.
 - Phase 2: passed. Credential-free empty-cache acquisition, full verification, unsigned evaluation packaging, deterministic evidence, and operating-system-denied offline replay all passed independent review with no unresolved finding.
 - Phase 3: passed. Independent review found and closed malformed-face coercion and an unnecessary seeded-crypto byte-copy lifetime; strict validation, cleanup-error paths, exact vectors, and same-module browser/Electron build-mode behavior now pass with no unresolved finding.
-- Phase 4: foundation passed independent review with no unresolved finding;
-  the user-facing wizard, navigation, visual QA, and packaged runtime E2E have
-  not started.
-- Phases 5 through 7: not started.
+- Phase 4: passed repeated independent review with no unresolved finding for
+  the foundation, scanner ownership, user-facing wizard, navigation,
+  responsive/keyboard contracts, and source-level lifecycle boundaries.
+- Phase 5: not started. Real-camera browser execution, active-flow network
+  denial, CSP, Electron security controls, and artifact inspection remain.
+- Phases 6 and 7: not started.
 
 ## Known blockers
 
@@ -53,7 +56,7 @@ Phases 0, 1, 2, and 3 and the Phase 4 recovery foundation are complete and indep
 - Seeded and scanner generated WASM build environments are not fully pinned or reproducible; scanner CMake also embeds a developer-local OpenCV path.
 - `keytar@7.9.0` is archived and its prebuild installer does not content-verify downloaded native archives. Electron 29 is unsupported. Both must be replaced, upgraded, or brought under verified source-build control before release.
 - Current Electron entitlements and signed/notarized packaging are not wallet-release ready. Phase 2 artifacts are local, unsigned, and explicitly `releaseEligible: false`.
-- D-020 now defines the separate Recovery profile check code. The future UI
-  must explain that it is comparison-only and privacy-linkable, must not
-  persist or transmit it, and must not present it as authentication, ownership,
-  a unique wallet identifier, or the BIP32 fingerprint.
+- D-020 defines the separate Recovery profile check code. The implemented UI
+  explains that it is comparison-only and privacy-linkable, does not persist or
+  transmit it, and does not present it as authentication, ownership, a unique
+  wallet identifier, or the BIP32 fingerprint.

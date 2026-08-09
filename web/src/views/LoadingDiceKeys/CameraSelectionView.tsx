@@ -1,8 +1,8 @@
 import { observer } from "mobx-react";
 import React from "react";
-import { Camera } from "./CamerasOnThisDevice";
+import type { Camera } from "./CamerasOnThisDevice";
 import { CenteredControls } from "../../views/basics";
-import { MediaStreamState } from "./MediaStreamState";
+import type { MediaStreamState } from "./MediaStreamState";
 interface CameraSelectionViewProps {
   cameras: Camera[],
   mediaStreamState: MediaStreamState
@@ -10,11 +10,13 @@ interface CameraSelectionViewProps {
 export const CameraSelectionView = observer ( (props: React.PropsWithoutRef<CameraSelectionViewProps>) => {
   const {cameras, mediaStreamState} = props;
   const {deviceId, defaultDevice} = mediaStreamState;
+  const selectId = React.useId();
   if (cameras.length <= 1) return null;
 
   return (
     <CenteredControls>
-      <select value={deviceId ?? defaultDevice?.deviceId} onChange={ (e) => {
+      <label htmlFor={selectId}>Camera</label>
+      <select id={selectId} value={deviceId ?? defaultDevice?.deviceId ?? ""} onChange={ (e) => {
         void mediaStreamState.setDeviceId(e.target.value).catch(() => {});
       }} >
         { cameras.map( camera => (

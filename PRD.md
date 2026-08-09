@@ -1,6 +1,6 @@
 # DiceKeys Wallet Recovery Product Requirements
 
-Status: approved project direction; Phases 0-3 and the Phase 4 recovery foundation complete; user-facing recovery UI not started
+Status: approved project direction; Phases 0-4 complete and independently reviewed; runtime hardening and release verification remain
 Profile: `DK-BIP39-24-v1`
 Last updated: 2026-08-09
 

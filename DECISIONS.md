@@ -181,7 +181,7 @@ and Electron execution remains part of the Phase 6 release-candidate gate.
 ## D-020: use a separate Recovery profile check code
 
 Date: 2026-08-09
-State: accepted, implemented, and independently reviewed in the Phase 4 foundation
+State: accepted, implemented, and independently reviewed in Phase 4
 
 The flow uses a `Recovery profile check code v1`, not a wallet or BIP32
 fingerprint. Its exact preimage is the UTF-8 bytes of
@@ -210,7 +210,7 @@ Phase 1 vector corpus and does not repurpose the BIP32 fingerprint in D-010.
 ## D-021: wallet recovery owns an isolated acquisition session
 
 Date: 2026-08-09
-State: accepted, implemented, and independently reviewed in the Phase 4 foundation
+State: accepted, implemented, and independently reviewed in Phase 4
 
 Wallet recovery opts into a dedicated scanner mode while the legacy scanner
 remains the default for existing application flows. An exact 25-face reading
@@ -219,7 +219,9 @@ no-majority, OCR-ambiguous, or wallet-invalid readings require a rescan. The
 wallet path receives only sanitized letter, digit, and orientation fields and
 must not write the DiceKey or center orientation to global application stores.
 
-Each mounted scan attempt owns a distinct worker, native image processor,
+Wallet recovery registers a distinct attempt and its cleanup authority before
+camera inventory discovery or media access. Each mounted scan attempt owns a
+distinct worker, native image processor,
 opaque session identifier, and monotonically increasing request identifier.
 Replies must match all correlation fields. A terminal candidate is bound to
 that exact attempt and makes camera, grabber, processor, media, callbacks, and
@@ -242,8 +244,9 @@ the main-thread copies and references are already cleared and the isolated
 worker realm is terminated, but settlement rejects as
 `ACQUISITION_DISPOSAL_FAILED`. The application must not claim that the fallback
 explicitly overwrote worker memory or ran native deletion. It must never
-advance using that acquisition. The two recovery readings must use distinct
-attempt identities and objects before comparison across all four physical
-rotations. These foundation rules do not themselves make the recovery flow
-user-facing; the dedicated wizard and packaged runtime E2E remain separate
-gates.
+advance using that acquisition. Readiness, frame-processing, and frame-capture
+deadlines route a stalled attempt through the same fixed failure and cleanup
+boundary. The two recovery readings must use distinct attempt identities and
+objects before comparison across all four physical rotations. The dedicated
+wizard implements these source-level rules; real-camera and packaged-runtime
+E2E remain separate gates.

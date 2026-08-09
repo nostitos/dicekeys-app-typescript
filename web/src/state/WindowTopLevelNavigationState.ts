@@ -16,6 +16,9 @@ import { RUNNING_IN_ELECTRON } from "../utilities/is-electron";
 import { ObservableLocalStorageBoolean } from "../utilities/ObservableLocalStorage";
 import { SecretSharingRecoveryState } from "../views/SimpleSecretSharing/SecretSharingRecoveryState";
 import { DiceKeyInMemoryStoreState } from "../views/WithSelectedDiceKey/DiceKeyInMemoryStoreState";
+import {
+  WalletRecoveryViewState,
+} from "../views/WalletRecovery/WalletRecoveryViewState";
 
 export type TopLevelSubViewStates =
   LoadDiceKeyViewState |
@@ -24,7 +27,8 @@ export type TopLevelSubViewStates =
   SeedHardwareKeyViewState |
   SaveDiceKeyViewState |
   DeleteDiceKeyViewState | 
-  SecretSharingRecoveryState;
+  SecretSharingRecoveryState |
+  WalletRecoveryViewState;
 
 const diceKeyFromPathRoot = (pathRoot: string | undefined): DiceKeyWithKeyId | undefined => {
   if (!pathRoot) return;
@@ -64,6 +68,48 @@ export class WindowTopLevelNavigationState {
   }));
 
   navigateToRecoverFromShares = () => this.navigateDownTo(new SecretSharingRecoveryState(this.navState, {}));
+
+  private normalizeWalletRecoveryBrowserHistoryEntry = () => {
+    if (RUNNING_IN_ELECTRON) return;
+    window.history.replaceState(
+      { historyIndex: addressBarState.historyIndex },
+      "",
+      this.navState.path || "/",
+    );
+  };
+
+  navigateToWalletRecovery = () => {
+    const previousSubViewState = this.subView.subViewState;
+    const installFreshWalletRecovery = () => {
+      this.subView.rawSetSubView(new WalletRecoveryViewState(this.navState));
+    };
+    const returnToPreviousState = () => {
+      const currentSubViewState = this.subView.subViewState;
+      if (currentSubViewState instanceof WalletRecoveryViewState) {
+        currentSubViewState.clear();
+      }
+      this.subView.rawSetSubView(previousSubViewState);
+    };
+    addressBarState.pushState(
+      this.navState.getPath,
+      installFreshWalletRecovery,
+      returnToPreviousState,
+    );
+    this.normalizeWalletRecoveryBrowserHistoryEntry();
+  };
+
+  exitWalletRecovery = (walletRecoveryState: WalletRecoveryViewState) => {
+    walletRecoveryState.clear();
+    this.subView.navigateToReplaceState(undefined);
+  };
+
+  restartWalletRecovery = (walletRecoveryState: WalletRecoveryViewState) => {
+    addressBarState.replaceState(
+      this.navState.getPath,
+      () => this.subView.rawSetSubView(walletRecoveryState.createFresh()),
+    );
+    this.normalizeWalletRecoveryBrowserHistoryEntry();
+  };
 
   navigateToSaveOrDeleteFromDevice = (saveOrDelete: SaveOrDeleteDiceKeyStateName) => async (descriptor: PublicDiceKeyDescriptorWithSavedOnDevice) => {
     const diceKey = await DiceKeyMemoryStore.load(descriptor);
@@ -164,6 +210,10 @@ export class WindowTopLevelNavigationState {
       case PathStrings.LoadDiceKey:
         window.history.replaceState({depth: 0}, "", "");
         windowTopLevelNavigationState.subView.navigateToPushState(new LoadDiceKeyViewState(windowTopLevelNavigationState.navState, "camera"));
+        return windowTopLevelNavigationState;
+      case PathStrings.WalletRecovery:
+        window.history.replaceState({ historyIndex: -1 }, "", "/");
+        windowTopLevelNavigationState.navigateToWalletRecovery();
         return windowTopLevelNavigationState;
       case PathStrings.AssemblyInstructions:
         window.history.replaceState({depth: 0}, "", "");

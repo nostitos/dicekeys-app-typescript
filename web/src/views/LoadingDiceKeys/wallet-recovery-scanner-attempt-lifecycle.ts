@@ -2,6 +2,7 @@ import type { ProcessFrameResponse } from "../../workers/dicekey-image-frame-wor
 
 export interface ScannerAttemptWorkerClient {
   readonly acquisitionId: string;
+  readonly readiness?: Promise<void>;
   processDiceKeyImageFrame(imageData: ImageData): Promise<ProcessFrameResponse>;
   dispose(): Promise<void>;
 }
@@ -24,6 +25,10 @@ export class ScannerAttemptLifecycle {
 
   get acquisitionId(): string | undefined {
     return this.client?.acquisitionId;
+  }
+
+  get readiness(): Promise<void> | undefined {
+    return this.client?.readiness;
   }
 
   processDiceKeyImageFrame = (imageData: ImageData): Promise<ProcessFrameResponse> => {

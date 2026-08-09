@@ -2,5 +2,6 @@
 export const PathStrings = {
   AssemblyInstructions: "assemble",
   LoadDiceKey: "load",
-  SeedFidoKey: "seed"
+  SeedFidoKey: "seed",
+  WalletRecovery: "wallet-recovery",
 } as const;

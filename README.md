@@ -36,7 +36,7 @@ The generated sources and package archives remain in the ignored `.cache/`
 directory; they are not vendored into Git.
 
 `check` runs the independent Python and TypeScript profile and recovery-check-
-code references, all 19 Jest suites and 1,843 tests with no skipped or todo
+code references, all 23 Jest suites and 1,998 tests with no skipped or todo
 tests, type checks, web production builds, the canonical Electron build, the
 Forge check-only build, and the build-contract security and determinism
 regressions.
@@ -92,6 +92,22 @@ available as a non-gating diagnostic:
 ```bash
 npm run lint:diagnostic
 ```
+
+## Wallet recovery flow
+
+The home screen's primary action, `Create Bitcoin wallet recovery words`, opens
+the dedicated `DK-BIP39-24-v1` recovery ceremony. It requires explicit safety
+consent, two independently owned camera attempts, confirmed scanner cleanup,
+all-rotation comparison, an explicit reveal, stable numbering for 24 English
+BIP39 words, backup verification, and a neutral clear receipt. The versioned
+Recovery profile check code is labeled as comparison-only and privacy-linkable.
+
+This flow does not offer clipboard copy, QR export, signing, transactions,
+balances, addresses, passphrase storage, SLIP39, cloud backup, or the reversible
+layout codec. Source-level UI, scanner, lifecycle, keyboard, responsive, and
+history contracts are independently reviewed. Real-camera browser execution,
+packaged Electron E2E, active-flow network denial, CSP/Electron hardening, and
+release-artifact inspection remain later gates.
 
 ## Release blockers
 
