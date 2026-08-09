@@ -1,18 +1,18 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
-import { lstat, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { lstat, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import {
   assertNoSymlinkPath,
+  createBuildTemporaryDirectory,
+  extractRepositoryTar,
   filesystemManifestEntries,
   filesystemManifestHash,
   normalizedTreeHash,
   relativePathInside,
   readJson,
   repositoryRoot,
-  run,
   sha256File,
 } from "./lib/build-contract.mjs";
 import {
@@ -47,7 +47,9 @@ if (!root || root.startsWith("/") || root.split("/").some((part) => part === "..
 }
 
 const archive = await readFile(archivePath);
-const canonicalRoot = await mkdtemp(join(tmpdir(), "dicekeys-canonical-desktop-archive-"));
+const canonicalRoot = await createBuildTemporaryDirectory(
+  "dicekeys-canonical-desktop-archive-",
+);
 try {
   const canonicalArchivePath = join(canonicalRoot, "canonical.tar");
   await createDeterministicTar({
@@ -146,9 +148,13 @@ if (JSON.stringify(sourceEntries) !== JSON.stringify(manifest.entries)) {
   throw new Error("desktop archive manifest differs from packaged source modes, links, or files");
 }
 
-const extractionRoot = await mkdtemp(join(tmpdir(), "dicekeys-desktop-archive-"));
+const extractionRoot = await createBuildTemporaryDirectory("dicekeys-desktop-archive-");
 try {
-  run("tar", ["-xpf", archivePath, "-C", extractionRoot]);
+  await extractRepositoryTar({
+    archivePath,
+    destinationDirectory: extractionRoot,
+    mode: "preserve-permissions",
+  });
   const extractedRoot = join(extractionRoot, root);
   const extractedInfo = await lstat(extractedRoot);
   if (!extractedInfo.isDirectory() || extractedInfo.isSymbolicLink()) {

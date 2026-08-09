@@ -17,6 +17,7 @@ import {
   assertNoSymlinkPath,
   buildToolsDirectory,
   commandEnvironment,
+  extractRepositoryTar,
   normalizedTreeHash,
   packageTreeHash,
   isUniqueRegularFile,
@@ -121,7 +122,12 @@ assertPathInside(workRoot, vendorCacheRoot);
 const stageRecipe = async (recipe, runRoot) => {
   const sourceRoot = join(runRoot, recipe.id);
   await mkdir(sourceRoot, { recursive: true });
-  run("tar", ["-xzf", sourceArchives.get(recipe.id), "-C", sourceRoot, "--strip-components=1"]);
+  await extractRepositoryTar({
+    archivePath: sourceArchives.get(recipe.id),
+    destinationDirectory: sourceRoot,
+    mode: "gzip",
+    stripComponents: 1,
+  });
   await rm(join(sourceRoot, ".npmrc"), { force: true });
 
   const packagePath = join(sourceRoot, "package.json");
@@ -188,7 +194,11 @@ const stageRecipe = async (recipe, runRoot) => {
     const helperArtifact = join(runRoot, "artifacts", helperRecipe.artifact.filename);
     const helperExtract = join(runRoot, `${recipe.id}-helper-extract`);
     await mkdir(helperExtract, { recursive: true });
-    run("tar", ["-xzf", helperArtifact, "-C", helperExtract]);
+    await extractRepositoryTar({
+      archivePath: helperArtifact,
+      destinationDirectory: helperExtract,
+      mode: "gzip",
+    });
     const helperTarget = join(nodeModules, "@dicekeys", "webasm-module-memory-helper");
     await mkdir(dirname(helperTarget), { recursive: true });
     await cp(join(helperExtract, "package"), helperTarget, { recursive: true });

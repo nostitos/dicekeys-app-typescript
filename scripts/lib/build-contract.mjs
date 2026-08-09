@@ -1,7 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import { constants, existsSync, lstatSync, readFileSync, realpathSync } from "node:fs";
 import { chmod, lstat, mkdir, mkdtemp, open, readdir, readFile, readlink, realpath, rename, rm, rmdir, stat, unlink } from "node:fs/promises";
-import { tmpdir } from "node:os";
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -440,18 +439,6 @@ export const normalizedTreeHash = async (root) => {
   return sha256(Buffer.from(lines.join(""), "utf8"));
 };
 
-export const packageTreeHash = async (archivePath) => {
-  const temporaryRoot = await mkdtemp(join(tmpdir(), "dicekeys-package-tree-"));
-  try {
-    run("tar", ["-xzf", archivePath, "-C", temporaryRoot]);
-    const packageRoot = join(temporaryRoot, "package");
-    if (!existsSync(packageRoot)) throw new Error(`${archivePath} has no package/ root`);
-    return await normalizedTreeHash(packageRoot);
-  } finally {
-    await rm(temporaryRoot, { recursive: true, force: true });
-  }
-};
-
 export const verifyPackageArtifact = async (
   archivePath,
   expected,
@@ -516,6 +503,116 @@ export const assertNoSymlinkPath = async (candidate, parent = repositoryRoot) =>
     if (info.isSymbolicLink()) {
       throw new Error(`refusing path with symlink ancestor: ${current}`);
     }
+  }
+};
+
+export const portableTarPathArgument = (
+  candidate,
+  parent = repositoryRoot,
+  pathImplementation = { resolve, relative, isAbsolute, sep },
+) => {
+  if (typeof candidate !== "string" || !pathImplementation.isAbsolute(candidate)) {
+    throw new Error("tar paths must be supplied as absolute paths");
+  }
+  if (candidate.split(/[\\/]/).some((component) => component === "." || component === "..")) {
+    throw new Error(`tar path contains a dot-segment escape: ${candidate}`);
+  }
+  const relativePath = relativePathInside(candidate, parent, pathImplementation);
+  if (relativePath === null) throw new Error(`tar path is outside the repository: ${candidate}`);
+  const components = relativePath.split("/");
+  if (
+    relativePath.startsWith("/") ||
+    /[:\\\0-\x1f\x7f]/.test(relativePath) ||
+    components.some((component) => !component || component === "." || component === "..")
+  ) {
+    throw new Error(`tar path cannot be serialized safely: ${candidate}`);
+  }
+  return relativePath;
+};
+
+export const extractRepositoryTar = async (
+  {
+    archivePath,
+    destinationDirectory,
+    mode = "gzip",
+    stripComponents,
+  },
+  { runFunction = run } = {},
+) => {
+  const repositoryInfo = await lstat(repositoryRoot);
+  if (!repositoryInfo.isDirectory() || repositoryInfo.isSymbolicLink()) {
+    throw new Error("tar working directory must be the real repository root");
+  }
+  const archiveArgument = portableTarPathArgument(archivePath);
+  const destinationArgument = portableTarPathArgument(destinationDirectory);
+  await assertNoSymlinkPath(archivePath);
+  await assertNoSymlinkPath(destinationDirectory);
+  const [archiveInfo, destinationInfo, destinationEntries] = await Promise.all([
+    lstat(archivePath),
+    lstat(destinationDirectory),
+    readdir(destinationDirectory),
+  ]);
+  if (
+    !archiveInfo.isFile() ||
+    archiveInfo.isSymbolicLink() ||
+    archiveInfo.nlink !== 1
+  ) {
+    throw new Error(`tar archive is not a unique regular file: ${archivePath}`);
+  }
+  if (!destinationInfo.isDirectory() || destinationInfo.isSymbolicLink()) {
+    throw new Error(`tar destination is not a real directory: ${destinationDirectory}`);
+  }
+  if (destinationEntries.length) {
+    throw new Error(`tar destination must be empty before extraction: ${destinationDirectory}`);
+  }
+  const extractionFlag = {
+    gzip: "-xzf",
+    "preserve-permissions": "-xpf",
+  }[mode];
+  if (!extractionFlag) throw new Error(`unsupported tar extraction mode: ${mode}`);
+  if (
+    stripComponents !== undefined &&
+    (!Number.isSafeInteger(stripComponents) || stripComponents < 0)
+  ) {
+    throw new Error("tar strip-components must be a non-negative safe integer");
+  }
+  const args = [extractionFlag, archiveArgument, "-C", destinationArgument];
+  if (stripComponents !== undefined) args.push(`--strip-components=${stripComponents}`);
+  await runFunction("tar", args, { cwd: repositoryRoot });
+  return { args, cwd: repositoryRoot };
+};
+
+export const createBuildTemporaryDirectory = async (prefix) => {
+  if (!/^[A-Za-z0-9._-]+-$/.test(prefix)) {
+    throw new Error(`unsafe build temporary directory prefix: ${prefix}`);
+  }
+  await assertNoSymlinkPath(buildTemporaryDirectory);
+  await mkdir(buildTemporaryDirectory, { recursive: true, mode: 0o700 });
+  const temporaryParentInfo = await lstat(buildTemporaryDirectory);
+  if (!temporaryParentInfo.isDirectory() || temporaryParentInfo.isSymbolicLink()) {
+    throw new Error("build temporary parent is not a real directory");
+  }
+  const temporaryDirectory = await mkdtemp(join(buildTemporaryDirectory, prefix));
+  const temporaryInfo = await lstat(temporaryDirectory);
+  if (!temporaryInfo.isDirectory() || temporaryInfo.isSymbolicLink()) {
+    throw new Error("created build temporary path is not a real directory");
+  }
+  return temporaryDirectory;
+};
+
+export const packageTreeHash = async (archivePath) => {
+  const temporaryRoot = await createBuildTemporaryDirectory("dicekeys-package-tree-");
+  try {
+    await extractRepositoryTar({
+      archivePath,
+      destinationDirectory: temporaryRoot,
+      mode: "gzip",
+    });
+    const packageRoot = join(temporaryRoot, "package");
+    if (!existsSync(packageRoot)) throw new Error(`${archivePath} has no package/ root`);
+    return await normalizedTreeHash(packageRoot);
+  } finally {
+    await rm(temporaryRoot, { recursive: true, force: true });
   }
 };
 
