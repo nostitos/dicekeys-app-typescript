@@ -210,7 +210,7 @@ const provenance = {
     `node scripts/create-deterministic-zip.mjs dist/web ${webArchive} web`,
     ...sbomRoots.map(
       (root) =>
-        `node scripts/run-npm.mjs --prefix ${root} sbom --sbom-format cyclonedx --sbom-type application`,
+        `node scripts/run-npm.mjs --prefix ${root} sbom --package-lock-only --sbom-format cyclonedx --sbom-type application`,
     ),
     "node scripts/generate-release-metadata.mjs release-artifacts",
   ],

@@ -26,6 +26,7 @@ node scripts/test-line-endings.mjs
 node scripts/test-ci-upload-policy.mjs
 node scripts/test-portable-path-containment.mjs
 node scripts/test-sbom-normalization.mjs
+node scripts/test-sbom-command-contract.mjs
 node scripts/test-package-authentication-order.mjs
 node scripts/test-vendor-lf-contract.mjs
 node scripts/test-npm-cli-resolution.mjs

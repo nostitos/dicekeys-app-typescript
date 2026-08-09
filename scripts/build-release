@@ -80,7 +80,7 @@ node scripts/create-deterministic-zip.mjs dist/web "release-artifacts/DiceKeys-w
 for root in . common web electron electron-forge vendor/build-tools; do
   label="${root//\//-}"
   label="${label//./root}"
-  npm_cli --prefix "$root" sbom --sbom-format cyclonedx --sbom-type application > "release-artifacts/sbom/${label}.raw.cdx.json"
+  npm_cli --prefix "$root" sbom --package-lock-only --sbom-format cyclonedx --sbom-type application > "release-artifacts/sbom/${label}.raw.cdx.json"
 done
 
 node scripts/generate-release-metadata.mjs release-artifacts
