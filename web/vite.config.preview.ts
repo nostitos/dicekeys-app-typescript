@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
+import { viteBuildConstants } from "./vite-build-metadata";
 
 const input = resolve(__dirname, "src", "preview.html");
 console.log(`preview path`, input);
@@ -15,11 +16,7 @@ export default defineConfig({
   // Since we deploy the web app off the base URL (https://[staging.]dicekeys.app/) the
   // base path of "/" is used.
   base: "/",
-  define: {
-    VITE_BUILD_VERSION: `"${process.env.npm_package_version}"`,
-    VITE_BUILD_DATE: `"${new Date().toLocaleString('en-us', { year: 'numeric', month: 'short', day: 'numeric' })}"`,
-    VITE_SET_APP_RUNNING_IN_ELECTRON: false
-  },
+  define: viteBuildConstants(false),
   build: {
     // for debugging
     minify: false,

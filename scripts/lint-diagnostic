@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib/build-contract.sh"
+if (($#)); then echo "error: lint-diagnostic takes no arguments" >&2; exit 2; fi
+configure_build_environment
+node "$SCRIPT_DIR/verify-sanitized-environment.mjs"
+
+if npm_cli --prefix "$REPOSITORY_ROOT/electron" run lint; then
+  echo "Electron lint diagnostic passed"
+else
+  echo "warning: Electron lint has pre-existing unbaselined findings and is non-gating in Phase 2" >&2
+fi
+exit 0

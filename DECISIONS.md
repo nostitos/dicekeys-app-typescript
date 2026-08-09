@@ -82,6 +82,54 @@ Phase 1 lives on `codex/phase-1-freeze-profile`, based on the reviewed Phase 0 d
 ## D-012: package-tarball equivalence is a Phase 2 and release gate
 
 Date: 2026-08-08
-State: accepted gate-boundary decision; no provenance equivalence claim
+State: superseded for the replacement-artifact build path by D-013; historical provenance statement retained
 
-Phase 1 freezes algorithm compatibility against the pinned public seeded-crypto 0.3.0 source/WASM blob and source-level derivation, which are independently executable and match all committed vectors. The exact GitHub Package tarball pinned by the app lockfile remains unavailable without an authorized `read:packages` credential, so its SRI has not been matched to that public blob. This does not block the user-defined Phase 1 specification gate, whose criteria are algorithm reproduction, rotation invariance, independent reimplementation, and a codec disposition. It remains an explicit Phase 2 build/supply-chain blocker and a release blocker. No document may claim that the inaccessible tarball is byte-equivalent until it is acquired and verified.
+Phase 1 freezes algorithm compatibility against the pinned public seeded-crypto 0.3.0 source/WASM blob and source-level derivation, which are independently executable and match all committed vectors. The exact GitHub Package tarball pinned by the app lockfile remains unavailable without an authorized `read:packages` credential, so its SRI has not been matched to that public blob. This did not block the user-defined Phase 1 specification gate, whose criteria were algorithm reproduction, rotation invariance, independent reimplementation, and a codec disposition. No document may claim that the inaccessible tarball is byte-equivalent until it is acquired and verified.
+
+Phase 2 removes reliance on the inaccessible package rather than treating historical equality as a prerequisite. The old URL and SRI remain recorded as provenance; the new build path must identify its output as a source-built replacement and prove compatibility independently.
+
+## D-013: replace private packages with pinned public-source builds
+
+Date: 2026-08-08
+State: accepted, implemented, and independently reviewed in Phase 2
+
+Build the four DiceKeys packages from pinned public source commits into an ignored local cache, then install those artifacts through committed `file:` lock entries. The source pins are API `96e201f086ee53761293e6a7ee1d90b76398cbab`, scanner `af943feb6eb37d60dae3d12946ec51a3d3d5148d`, seeded crypto `6abb040989f4ad0dce5026e08407425ff57a401e`, and WASM memory helper `7b7f454efb1f6f7ae402a054fcb75db53b496db7`.
+
+Each recipe must record the source commit and tree, acquired-source hash, compiler/build inputs, generated-blob hashes, normalized package-tree hash, new artifact integrity, historical package URL/SRI, license evidence, and whether historical bytes were compared. Generated sources and tarballs remain untracked. Raw git dependencies are rejected because the helper commit has no built `dist` entrypoint or prepare lifecycle.
+
+This is an explicit provenance break. The helper and scanner historical package bytes were independently reconstructed from their public source commits with a compatible legacy packaging toolchain. API and seeded-crypto package bytes were not. Algorithm compatibility for seeded crypto remains independently established by all 108 Phase 1 derivations against the exact public generated blob.
+
+## D-014: pin a supported Node and npm pair
+
+Date: 2026-08-08
+State: accepted Phase 2 build decision
+
+The build contract requires Node `22.23.2` and npm `10.9.8`. Node 20 is end-of-life, the README and Volta Node 18 settings are stale, and a floating runtime cannot define a reproducible release foundation. A later compatibility matrix may exercise Node 24, but it cannot silently change the required artifact-producing toolchain.
+
+## D-015: electron-builder is the only release desktop pipeline
+
+Date: 2026-08-08
+State: accepted Phase 2 build decision
+
+The `electron/` application packaged by electron-builder is the canonical desktop path. The `electron-forge/` tree is an incomplete experiment: it has no application source or renderer outputs of its own and its declared main is absent. Phase 2 may compile its configuration and renderer target as a diagnostic, but it must never use Forge to produce release artifacts.
+
+## D-016: Phase 2 desktop artifacts are unsigned and ineligible for release
+
+Date: 2026-08-08
+State: accepted gate-boundary decision
+
+Phase 2 may produce a local, host-architecture Electron evaluation bundle only through an explicit unsigned configuration. It must set the macOS identity to `null`, omit the provisioning profile and notarization hook, disable DMG signing, omit Windows certificate selectors, use an `-unsigned` artifact name, and record `releaseEligible: false`. Signing, notarization, stapling, and platform publishing belong to a later protected release gate and must fail closed when implemented.
+
+## D-017: a working build does not resolve the release blockers
+
+Date: 2026-08-08
+State: accepted security boundary
+
+Credential-free installation and an unsigned local package are necessary but insufficient for distribution. Public release remains blocked until all of the following are resolved and independently reviewed:
+
+- the repository and scanner's all-rights-reserved license text conflicts with package-level MIT claims;
+- the seeded-crypto and scanner generated WASM build toolchains are portable, fully pinned, rebuilt, and hash-compared;
+- `keytar@7.9.0` is replaced or its native binaries are acquired or rebuilt with verified content hashes;
+- Electron is upgraded from unsupported major 29;
+- wallet-inappropriate debugger, DYLD, unsigned-executable-memory, and library-validation entitlements are removed or narrowly justified; and
+- the signed release path aborts on any signing or notarization failure.

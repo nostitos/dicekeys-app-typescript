@@ -1,0 +1,282 @@
+{
+  "schemaVersion": 1,
+  "artifactPolicy": {
+    "classification": "source-built replacement",
+    "publishedByteEquivalenceClaimed": false,
+    "commitArtifacts": false,
+    "releaseEligible": false,
+    "treeHashAlgorithm": "sha256 of sorted lines: <file-sha256><two spaces><package-relative-path><LF>"
+  },
+  "buildEnvironment": {
+    "node": "22.23.2",
+    "npm": "10.9.8",
+    "buildToolsLock": "vendor/build-tools/package-lock.json",
+    "cleanBuildCount": 2,
+    "offlineBoundary": "Offline bootstrap and build-release verify and reuse previously acquired source archives, local package artifacts, npm cache entries, and the audited host Electron archive. Missing acquisition inputs fail closed. The --offline flag is cache enforcement, not proof of operating-system-level network denial."
+  },
+  "stagingTransformations": [
+    "Remove upstream npm registry configuration from the extracted staging copy.",
+    "Remove publishConfig and prepare lifecycle scripts from the staged package manifest.",
+    "Normalize API and seeded package license fields to MIT only where the pinned source contains an MIT LICENSE file.",
+    "Keep read-dicekey-js UNLICENSED and keep the release ineligible.",
+    "Pin seeded/read helper dependency to 1.0.6 in the staged package manifest.",
+    "Compile seeded/read with a generated tsconfig that excludes source tests; tests are not shipped by the upstream package file list.",
+    "Compile with the exact aliased TypeScript and type packages in the public-only build-tools lock.",
+    "Copy only the already committed generated JS and WASM map files; do not claim a WASM rebuild."
+  ],
+  "nestedSourceInputs": {
+    "seededCryptoCpp": {
+      "repository": "dicekeys/seeded-crypto",
+      "commit": "8e1d1965c1720b8964e3ee1880163f7a6b221781",
+      "gitTree": "731489e66d3619dcb815d5acea092a46424ffd86",
+      "archiveUrl": "https://codeload.github.com/dicekeys/seeded-crypto/tar.gz/8e1d1965c1720b8964e3ee1880163f7a6b221781",
+      "archiveSha256": "52fd65b71583fb7b87cc14eee5a9c8b0506b7af43ce709d112ff307ee37aae86",
+      "buildToolchainPinned": false,
+      "releaseBlockerIds": ["wasm-toolchain-unpinned"]
+    },
+    "seededCryptoLibsodium": {
+      "repository": "jedisct1/libsodium",
+      "commit": "940ef42797baa0278df6b7fd9e67c7590f87744b",
+      "archiveSha256": "4df59c951e90dd50c52b8c39d332b047307f72b251e7ae0b89ea1621166ef8bf"
+    },
+    "seededCryptoGtest": {
+      "repository": "google/googletest",
+      "commit": "61f010d703b32de9bfb20ab90ece38ab2f25977f",
+      "archiveSha256": "c725379582cc733bb239020eb3be6a31309f2b6a54316b8790de6ddd7a09effb"
+    },
+    "scannerCpp": {
+      "repository": "dicekeys/read-dicekey",
+      "commit": "64369092d09d728f33db21b4e905054364a9d362",
+      "gitTree": "aadd049c094ef121ba844c281f9372a11a1a8b3d",
+      "archiveSha256": "8d98195aa037fa4a293f9515b6983942aaa7de81d9849c0d1f1b8ce5ba98133f",
+      "license": "all-rights-reserved",
+      "buildToolchainPinned": false,
+      "releaseBlockerIds": ["license-repository-scanner", "wasm-toolchain-unpinned"]
+    },
+    "scannerGtest": {
+      "repository": "google/googletest",
+      "commit": "f2fb48c3b3d79a75a88a99fba6576b25d42ec528",
+      "archiveSha256": "89439545b04326bc8a9540c665aee5cdb23b728e75ef6cfbfa85b0508ee278e2"
+    },
+    "scannerOpenCv": {
+      "repository": "opencv/opencv",
+      "commit": "01b2c5a77ca6dbef3baef24ebc0a5984579231d9",
+      "archiveSha256": "9fb00589ce92b9310e324f0a4cea166cbe9cda5fca375a390ecab440904f71e1"
+    }
+  },
+  "externalNativeInputs": {
+    "electron": {
+      "version": "29.1.6",
+      "downloadUrlTemplate": "https://github.com/electron/electron/releases/download/v{version}/electron-v{version}-{platform}-{arch}.zip",
+      "electronGetCacheDirectory": "d571833ca78195032b264d2a913d36a9a912eb0d7f2ae3c7b66b4c026b42e5ac",
+      "checksumsJsonSha256": "eb52a8e37d02ab1410c009ec6a7f4fa6c22af117150446f6eab6813049794ee9",
+      "supportedByUpstream": false,
+      "releaseBlockerIds": [
+        "electron-unsupported",
+        "permissive-entitlements",
+        "signing-notarization-out-of-scope"
+      ],
+      "platformZipSha256": {
+        "darwin-arm64": "02eaa03acde8dad8a227a08ef48c77e19fe29cfa945de3d986519420dddcf4c3",
+        "darwin-x64": "b17e76aa5598027bde3b9e178e265137d16f6cea2ac7f3c3fc635addde4fbd15",
+        "linux-x64": "1cce6c6f48192f764498e86f208a28adfd01a0e4aaf3f6e78112310986342d93",
+        "win32-x64": "668d6fda36abd1ab51c366afd787bb941818a35412c2ec4945eb523600eef0f2"
+      }
+    },
+    "keytar": {
+      "version": "7.9.0",
+      "repositoryArchived": true,
+      "verifiedByInstallPath": false,
+      "releaseBlockerIds": ["keytar-prebuild-unverified"],
+      "prebuildSha256": {
+        "darwin-arm64": "195f0855e26f83e0d61e228d1b61c7769baa993244518dc9879d9d57104c7cec",
+        "darwin-x64": "4ce56e3896e76a2deaef13f8a36207efa6d94d96678d30200952d83d327eb5f9",
+        "linux-x64": "2d75753fabf9dceb49537ae231e1897de53727bc0fadbc2a01e6374a1443c67c",
+        "win32-x64": "f00156103976f77847f9ff96ca96c3facac2b4527edf41dfee5d50be39736459"
+      }
+    }
+  },
+  "releaseBlockers": [
+    {
+      "id": "license-repository-scanner",
+      "description": "The repository-wide license grant is unresolved and read-dicekey scanner source reserves all rights."
+    },
+    {
+      "id": "license-helper-text",
+      "description": "webasm-module-memory-helper declares MIT but its pinned source has no license text."
+    },
+    {
+      "id": "wasm-toolchain-unpinned",
+      "description": "Seeded and scanner generated WASM rebuild toolchains are not pinned."
+    },
+    {
+      "id": "keytar-prebuild-unverified",
+      "description": "keytar 7.9.0 is archived and its prebuild download is not verified by the install path."
+    },
+    {
+      "id": "electron-unsupported",
+      "description": "Electron 29 is unsupported."
+    },
+    {
+      "id": "permissive-entitlements",
+      "description": "Electron entitlements permit debug, DYLD environment variables, unsigned executable memory, and disabled library validation."
+    },
+    {
+      "id": "signing-notarization-out-of-scope",
+      "description": "Signing and notarization are intentionally out of scope for this unsigned evaluation build."
+    }
+  ],
+  "packages": [
+    {
+      "id": "helper",
+      "name": "@dicekeys/webasm-module-memory-helper",
+      "version": "1.0.6",
+      "repository": "dicekeys/webasm-module-memory-helper",
+      "commit": "7b7f454efb1f6f7ae402a054fcb75db53b496db7",
+      "gitTree": "8d91a61e977a008f21336ef490ecadf58f3e55c0",
+      "sourceArchive": {
+        "url": "https://codeload.github.com/dicekeys/webasm-module-memory-helper/tar.gz/7b7f454efb1f6f7ae402a054fcb75db53b496db7",
+        "sha256": "6eec1cf9af20e7b1ec64da82a3ab7332bd5ad6910d98f12420454b3ace434ade"
+      },
+      "historicalPackage": {
+        "url": "https://npm.pkg.github.com/download/@dicekeys/webasm-module-memory-helper/1.0.6/66dce66ee2e19b3b922948aaaf49ecee1115eb82",
+        "integrity": "sha512-85Rk7USAofeuF4Zmd7N36ifGx8mrHrncW7IGsPj4cjpdblIuCY0ZyFPOdYxe3hlMQTwHxL+6T6aO8SVKgFgRLA==",
+        "usedByBuild": false
+      },
+      "compiler": "typescript-4-4",
+      "typescriptNewLine": "lf",
+      "nodeTypes": "types-node-14",
+      "emscriptenTypes": "types-emscripten-1-39-4",
+      "copyGeneratedPrefix": null,
+      "license": {
+        "declared": "MIT",
+        "sourceLicenseFilePresent": false,
+        "releaseBlocker": true,
+        "releaseBlockerIds": ["license-helper-text"]
+      },
+      "stagedSourceTreeSha256": "9be4426402387a14c21d8c5a20cd375d2c7375b11907191b49849976f1889961",
+      "artifact": {
+        "filename": "dicekeys-webasm-module-memory-helper-1.0.6.tgz",
+        "sha256": "78bc38b054d0797e7d8a7d628e4520e024b22b0ec665743245063a849eccdf6a",
+        "integrity": "sha512-V9t6aU+bkM57sprPj6rnZBst0C/diLEyCmaN8x/sDF9ehI9Vk56IYpFDv8i20DaG5fSH4PFfbLpPRLIDSFwONQ==",
+        "packageTreeSha256": "d4c9db0e1128f8b6aad325acb6cd73b2087331fbfaa61f2ea7781700acf1cd44"
+      }
+    },
+    {
+      "id": "api",
+      "name": "@dicekeys/dicekeys-api-js",
+      "version": "0.1.13",
+      "repository": "dicekeys/dicekeys-api-js",
+      "commit": "96e201f086ee53761293e6a7ee1d90b76398cbab",
+      "gitTree": "b9b06a6b71fae9eef8d7a20942b78a4b3082f265",
+      "sourceArchive": {
+        "url": "https://codeload.github.com/dicekeys/dicekeys-api-js/tar.gz/96e201f086ee53761293e6a7ee1d90b76398cbab",
+        "sha256": "efcc9c4ddb673a10c7c1f349fdfe75dde659b37b9c9521b0f9950cb9dfed8585"
+      },
+      "historicalPackage": {
+        "url": "https://npm.pkg.github.com/download/@dicekeys/dicekeys-api-js/0.1.13/ed09e999bde585760cd33baa1203cd721c6148a5",
+        "integrity": "sha512-ojlJYBy1yymQAifaye5YbTFh4kVz9JBaiODUraiU8jLfDF+M1CO32TBIVZ4N1wKuFh7cJcCEMhw7YAv7b3bUeg==",
+        "usedByBuild": false
+      },
+      "compiler": "typescript-4-6",
+      "typescriptNewLine": "lf",
+      "nodeTypes": "types-node-17",
+      "emscriptenTypes": null,
+      "copyGeneratedPrefix": null,
+      "license": {
+        "declared": "MIT",
+        "sourceLicenseFilePresent": true,
+        "releaseBlocker": false
+      },
+      "stagedSourceTreeSha256": "4827211a1b9d513bebf92c21a8929bc1c50044dca43ef164621bd0e960e773ad",
+      "artifact": {
+        "filename": "dicekeys-dicekeys-api-js-0.1.13.tgz",
+        "sha256": "f244d089b18efae8eef130cad7a2317ecc7a71db8f1a9eb37682a2c40de0fac4",
+        "integrity": "sha512-JmbTffU4tVKPXdANR+50FKAuRQz9poHgrrny/AWu/QaEo5zOYqe54AaHZ2eEfCngiasPhc4fgGUyrjoqJ+70Uw==",
+        "packageTreeSha256": "385b642d619200de2b1d01d281b5bf61e7fe96bf87862ef9351e80dbfeebf33f"
+      }
+    },
+    {
+      "id": "seeded",
+      "name": "@dicekeys/seeded-crypto-js",
+      "version": "0.3.0",
+      "repository": "dicekeys/seeded-crypto-js",
+      "commit": "6abb040989f4ad0dce5026e08407425ff57a401e",
+      "gitTree": "d035f698511f23901e313a8af91b2c1bdb2298bf",
+      "sourceArchive": {
+        "url": "https://codeload.github.com/dicekeys/seeded-crypto-js/tar.gz/6abb040989f4ad0dce5026e08407425ff57a401e",
+        "sha256": "135545bc57081c0d465c1c9bf906d53f4a24e6364fa58a058afb0efc280acc6c"
+      },
+      "historicalPackage": {
+        "url": "https://npm.pkg.github.com/download/@dicekeys/seeded-crypto-js/0.3.0/002eb457101eb420acc4ed727b64d85fd8ffa2c5",
+        "integrity": "sha512-Ftz+1ownyccibVao+7KYI0oO+jKvWqS3UDPFCx7GeLpuLjiqVGhdtv28LKZdrX5m0ji9d+s4eJ9XW2bvYT7YZA==",
+        "usedByBuild": false
+      },
+      "compiler": "typescript-3-9",
+      "typescriptNewLine": "lf",
+      "nodeTypes": "types-node-14",
+      "emscriptenTypes": "types-emscripten-1-39-4",
+      "copyGeneratedPrefix": "seeded-crypto-js.",
+      "generatedWasmSource": {
+        "blobSha256": "8a29007c11ebd0a0e8793089c6aa480633474d0336a41f0f4b248ef385b6d1ec",
+        "mapSha256": "5972a35c779e2746c8f76e9318958e6e5dec762cac4e4ce0b1b9cc3415e39b9a",
+        "embeddedWasmSha256": "9b3025755c2d7141f91f41120c76c3e7516b77ae7ef0a258778f2b3461c47cca",
+        "rebuildToolchainPinned": false
+      },
+      "license": {
+        "declared": "MIT",
+        "sourceLicenseFilePresent": true,
+        "releaseBlocker": false
+      },
+      "stagedSourceTreeSha256": "6ef125ea9d2196b3355866c9579b05ea9f70b0d12eece62a0ba4741e796f0af0",
+      "artifact": {
+        "filename": "dicekeys-seeded-crypto-js-0.3.0.tgz",
+        "sha256": "fe4a40ce7115908cacafa478dff9f3772eea84967f5da1575fe4e1bcaa753a3c",
+        "integrity": "sha512-4/D9Y1krPMn6bxulx2kHaAp8haypOwDiuL7/1NvXeZcoeujytHFdTm1ecAmNeGoaSc/y1nW10//rFDgefI5M7w==",
+        "packageTreeSha256": "b3dffffe456a326f318b6ac185b7ef1c2f81a236551f843f82a327733575878c"
+      }
+    },
+    {
+      "id": "read",
+      "name": "@dicekeys/read-dicekey-js",
+      "version": "0.0.39",
+      "repository": "dicekeys/read-dicekey-js",
+      "commit": "af943feb6eb37d60dae3d12946ec51a3d3d5148d",
+      "gitTree": "b23fc24b541805bff15cdfec60617adbe89338c1",
+      "sourceArchive": {
+        "url": "https://codeload.github.com/dicekeys/read-dicekey-js/tar.gz/af943feb6eb37d60dae3d12946ec51a3d3d5148d",
+        "sha256": "e995fe4d2c84a16d399c1f6bf11643bbabb99571a027daacf2107ed8879bcb14"
+      },
+      "historicalPackage": {
+        "url": "https://npm.pkg.github.com/download/@dicekeys/read-dicekey-js/0.0.39/262bb3ee832b66f3ef35da0c08caba3bd2bb59ff",
+        "integrity": "sha512-nJ1/wz+Xr6KizpPsD7kYyRiPyeGnSI+6JlVZdluRrJDTpoAuhzCH2L1LRFshemVEbw1FJTWo+qbTrYpbIRmv3Q==",
+        "usedByBuild": false
+      },
+      "compiler": "typescript-4-4",
+      "typescriptNewLine": "lf",
+      "nodeTypes": "types-node-16",
+      "emscriptenTypes": "types-emscripten-1-39-5",
+      "copyGeneratedPrefix": "read-dicekey-js.",
+      "generatedWasmSource": {
+        "blobSha256": "456f143f66bb2803cbfeb45f7c4654e86d33fb742a7f86b5fec1220b369b9fe6",
+        "mapSha256": "83cc2c0730c6af768a3f0fff4c84cce7be26549b83623237f6b7b2ec3efa9c2e",
+        "embeddedWasmSha256": "faf2da95b966c29776597b68e95204f172cf0f4fc19d5c7adece9239609242f7",
+        "rebuildToolchainPinned": false
+      },
+      "license": {
+        "declared": "UNLICENSED",
+        "sourceLicenseFilePresent": true,
+        "releaseBlocker": true,
+        "releaseBlockerIds": ["license-repository-scanner"],
+        "reason": "Source LICENSE reserves all rights while upstream chooses a license."
+      },
+      "stagedSourceTreeSha256": "f22e3b328228fec1f93456c6ebf3c019c03353fff6c993f33a999d0fd1e0600e",
+      "artifact": {
+        "filename": "dicekeys-read-dicekey-js-0.0.39.tgz",
+        "sha256": "4cf9c35da3144e0802b6b63d1688dadd522882f3816bd8e6ea322f63c1cc2d38",
+        "integrity": "sha512-Y5lhbIie7fIB8wb+q9xVoSuyr3/3L44vO5MFkkQN4o37CnKd61pZfyE+RyEvzU1TeTwy3Ci3qSEC4bdrdkwoxQ==",
+        "packageTreeSha256": "6b3b5c17a3d803ec7fd14ed3b0ab687214e4045c75c65ce2d447603f51be68d1"
+      }
+    }
+  ]
+}

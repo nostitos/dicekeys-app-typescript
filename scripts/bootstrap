@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 022
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib/build-contract.sh"
+parse_offline_flag "$@"
+configure_build_environment
+node "$SCRIPT_DIR/verify-sanitized-environment.mjs"
+
+cd "$REPOSITORY_ROOT"
+node scripts/verify-build-contract.mjs --preinstall
+before_digest="$(node scripts/verify-build-contract.mjs --lock-digest)"
+
+if [[ $OFFLINE == true ]]; then
+  node scripts/build-vendor-packages.mjs --offline
+  node scripts/acquire-native-inputs.mjs --offline
+else
+  node scripts/build-vendor-packages.mjs
+  node scripts/acquire-native-inputs.mjs
+fi
+
+for root in . common web electron electron-forge; do
+  npm_ci_root "$root"
+done
+
+after_digest="$(node scripts/verify-build-contract.mjs --lock-digest)"
+if [[ $before_digest != "$after_digest" ]]; then
+  echo "error: bootstrap mutated a manifest, lockfile, npm policy, or vendor recipe" >&2
+  exit 1
+fi
+
+node scripts/verify-build-contract.mjs --postinstall
+echo "bootstrap complete: credential-free frozen installs for all four application roots"

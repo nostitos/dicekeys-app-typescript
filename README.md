@@ -1,102 +1,105 @@
 # DiceKeys TypeScript App for DiceKeys.app and Electron
 
+This branch provides a credential-free, pinned build foundation for auditing and
+testing the existing DiceKeys application. It does **not** produce release-ready
+wallet software. Desktop outputs are unsigned evaluation artifacts and their
+metadata always records `releaseEligible: false`.
+
 ## Requirements
 
-## Running web app locally
-Tested to work with Node.js LTS v18.
+- Node.js 22.23.2
+- npm 10.9.8 (bundled with that Node.js release)
+- Git
+- Python 3 for the independent derivation-reference tests
+- Normal platform build tools required by Electron
 
-Install [TypeScript](https://www.typescriptlang.org/download) in your system.
-```bash
-npm install -g typescript
-```
+The exact runtime is recorded in `.nvmrc`, `.node-version`, `package.json`, and
+the root lockfile. Do not install TypeScript, Vite, or other project tools
+globally.
 
-Install [vite](https://vitejs.dev/) in your system.
-```bash
-npm install -g vite
-```
+## Bootstrap, verify, and build
 
-We're currently using [GitHub Packages](https://docs.github.com/en/packages/) for the project's internal dependencies, which we now regret because it requires you to have a GitHub account and personal access token to install this repository's dependencies. (If this is arduous, please file an issue and we may move to NPM.) If you don't already have a personal access token with the read:packages permission set, create a GitHub personal access token [following the instructions in the GitHub documentation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token), ensure it has the read:packages permission, then use the following command to login to github before the step where you'll run `npm install`
-> npm login --scope=@dicekeys --auth-type=legacy --registry=https://npm.pkg.github.com
-
-(you will be prompted for the personal access token)
-
-Install modules
-```bash
-cd web
-npm install
-```
-_If `npm` fails, check **GitHub Packages** instructions._
+From the repository root:
 
 ```bash
-npm run start
+./scripts/bootstrap
+./scripts/check
+./scripts/build-release
 ```
 
-If seeing a browser error for `Uncaught ReferenceError: WebAssembly is not defined` you may need to turn off browser safe mode for localhost.  (In edge, go to the circle `i` just to the left of the address in the address bar and then look for the enhanced security option.)
+`bootstrap` needs ordinary public internet access on its first run, but it does
+not use a GitHub Packages login or a personal access token. It fetches pinned
+public source commits, verifies them, builds the four local `@dicekeys`
+replacement packages twice, verifies the resulting package identities, acquires
+the pinned native inputs, and performs frozen installs in every package root.
+The generated sources and package archives remain in the ignored `.cache/`
+directory; they are not vendored into Git.
 
-Due to an [incompatibility](https://github.com/vitejs/vite/issues/4586) between vite's handling of imports and FireFox, workers don't work in FireFox on dev (but works fine when built for production and deployed to a web server, so test on the staging server.)
+`check` runs the independent Python and TypeScript profile references, all 13
+Jest suites and 1,696 tests with no skipped or todo tests, type checks, web
+production builds, the canonical Electron build, the Forge check-only build,
+and the build-contract security and determinism regressions.
 
-## Running electron app
+`build-release` repeats bootstrap and verification before creating:
+
+- a deterministic web ZIP;
+- a deterministic host-platform desktop tar containing an unsigned package;
+- normalized CycloneDX SBOMs;
+- provenance, license, package, checksum, symlink, and assertion manifests.
+
+Outputs are written to `release-artifacts/`. The Electron Builder pipeline under
+`electron/` is canonical; `electron-forge/` is compiled only as a compatibility
+check.
+
+## Offline cache replay
+
+After one successful online bootstrap, the same acquired inputs can be replayed
+without network acquisition:
 
 ```bash
-cd electron
-sh build_modules.sh
-npm run start
-```
-or manually
-```bash
-cd common
-npm install
-npm run build
-cd ..
-cd web
-npm install
-npm run build-electron-html
-cd ../electron
-npm install
-npm run start
-```
-## Build electron app for macOS
-
-First do all the steps of the previous section and then:
-```bash
-cd electron
-npm run build
-
-# if you just want the .app 
-npm run pack
-
-# or dmg distribution files
-npm run dist-macos
+./scripts/bootstrap --offline
+./scripts/check
+./scripts/build-release --offline
 ```
 
-## Build electron app for Windows/Linux
+The offline mode is fail-closed with respect to the pinned source, npm, Electron,
+and native-input caches. CI provides cross-platform cache replay with fail-fast
+proxy sentinels; it does not claim operating-system-level network isolation.
+Phase 2 acceptance additionally requires a recorded Linux Docker replay with
+`--network none`, which is the authoritative network-denial proof.
 
-Using docker to create distributions written under `/electron/out`
-  - Linux **deb**, **rpm**, and **zip**
-  - Windows: **setup**
+## Local development
+
+After bootstrap, start the web application with:
 
 ```bash
-# Build steps need to be executed from within the `electron` subdirectory.
-cd electron
-
-# Create a docker container with everything needed to build the electron app
-docker buildx build --platform linux/amd64 -f Dockerfile . --tag dicekeys_build
-
-# Run the electron build process within the docker container:
-docker run --platform linux/amd64 --name dicekeys_build --rm -v $PWD:/dicekeys dicekeys_build
+npm --prefix web run start
 ```
 
-If you run into problems, it may be helpful to clear docker's cache, via:
+Start the canonical Electron development application with:
+
 ```bash
-# DO NOT RUN unless you run into problems.
-docker builder prune
+npm --prefix common run build
+npm --prefix web run build-electron-html
+npm --prefix electron run build
+npm --prefix electron run start
 ```
 
-## Run tests
+The inherited Electron lint baseline currently reports known findings, so it is
+available as a non-gating diagnostic:
+
 ```bash
-cd web/
-npm run test
+npm run lint:diagnostic
 ```
+
+## Release blockers
+
+Public redistribution remains blocked by unresolved repository/scanner license
+terms, a missing helper license file, unreproduced generated-WASM toolchains,
+unverified legacy `keytar` native delivery, unsupported Electron 29, permissive
+entitlements, and the absence of a fail-closed signed/notarized release path.
+See `SECURITY_REVIEW.md`, `DECISIONS.md`, and `RELEASE_CHECKLIST.md` for the
+evidence and required remediation.
 
 ## Architecture
 

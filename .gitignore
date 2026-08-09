@@ -1,6 +1,7 @@
 node_modules/
 .vs/
 .cache/
+release-artifacts/
 dist/
 dist-*/
 test-outputs/
@@ -33,3 +34,7 @@ electron-forge/electron-html/
 
 electron-forge/forge.config.js
 electron-forge/out
+
+# Source-built replacements are generated locally from pinned public commits.
+# They are intentionally never committed.
+.cache/vendor/
