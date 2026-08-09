@@ -250,12 +250,22 @@ if (process.platform === "win32") {
       "unsigned ; Write-Error injected.exe",
     );
     await writeFile(integrationExecutable, "unsigned fixture\n");
-    const integrationResult = inspectUnsignedAuthenticode({
-      applicationExecutable: integrationExecutable,
-      packagedContentRoot: integrationRoot,
-    });
-    if (integrationResult.status !== "NotSigned") {
-      throw new Error("real PowerShell Authenticode integration did not report NotSigned");
+    let rejectedAsInvalidPe = false;
+    try {
+      inspectUnsignedAuthenticode({
+        applicationExecutable: integrationExecutable,
+        packagedContentRoot: integrationRoot,
+      });
+    } catch (error) {
+      if (!String(error?.message).includes('"status":"UnknownError"')) {
+        throw new Error(
+          `real PowerShell Authenticode integration failed unexpectedly: ${error?.message ?? error}`,
+        );
+      }
+      rejectedAsInvalidPe = true;
+    }
+    if (!rejectedAsInvalidPe) {
+      throw new Error("real PowerShell Authenticode integration accepted an invalid PE fixture");
     }
   } finally {
     await rm(integrationRoot, { recursive: true, force: true });
