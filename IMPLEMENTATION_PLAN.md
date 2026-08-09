@@ -1,6 +1,6 @@
 # Implementation Plan
 
-Status: Phases 0, 1, and 2 complete; Phase 3 not started
+Status: Phases 0, 1, 2, and 3 complete; Phase 4 not started
 Last updated: 2026-08-08
 
 ## Working model
@@ -10,7 +10,7 @@ Last updated: 2026-08-08
 - An implementation agent receives one bounded code area at a time only after the relevant gate passes.
 - No agent approves or merges its own work.
 - Tests, committed vectors, production builds, and independent review determine completion.
-- Application behavior remains unchanged until the upstream audit and compatibility specification pass review.
+- User-facing application behavior remains unchanged until Phase 4, and no UI work begins before the isolated derivation module passes independent review.
 
 ## Phase 0: upstream baseline
 
@@ -52,6 +52,21 @@ Phase 2 does not authorize public distribution. Repository/scanner licensing, re
 Deliverables: a narrowly scoped `DiceKeyBip39ProfileV1` module, exact-recipe regression tests, committed-vector tests, rotation invariance, BIP39 validation, malformed-input failure tests, and a test proving the reversible codec is unreachable through the wallet API.
 
 Gate: derivation code passes independent review before UI work begins.
+
+Result: passed independent review. The new cache-free API binds the exact
+profile and recipe, strictly validates and sanitizes 25 runtime faces before
+canonicalization, matches all 27 vectors and 108 rotations, preserves BIP39
+checksum and word-list provenance, and does not export entropy, a recipe
+override, the reversible codec, or the internal test seam. Review-discovered
+face-coercion and temporary-byte-copy lifetime defects were fixed and covered
+across success and cleanup-error paths. The complete check now passes 14 Jest
+suites and 1,712 tests plus the independent Python/TypeScript references and
+web, Electron, and Forge builds.
+
+The build-mode regression proves that fresh browser-mode and Electron-mode
+module loads produce the same fixed result. Actual browser and packaged
+Electron runtime execution remains a Phase 6 E2E gate. A verification
+fingerprint remains deliberately undefined and deferred under D-018.
 
 ## Phase 4: dedicated recovery flow
 
