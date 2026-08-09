@@ -35,10 +35,11 @@ the pinned native inputs, and performs frozen installs in every package root.
 The generated sources and package archives remain in the ignored `.cache/`
 directory; they are not vendored into Git.
 
-`check` runs the independent Python and TypeScript profile references, all 14
-Jest suites and 1,712 tests with no skipped or todo tests, type checks, web
-production builds, the canonical Electron build, the Forge check-only build,
-and the build-contract security and determinism regressions.
+`check` runs the independent Python and TypeScript profile and recovery-check-
+code references, all 19 Jest suites and 1,843 tests with no skipped or todo
+tests, type checks, web production builds, the canonical Electron build, the
+Forge check-only build, and the build-contract security and determinism
+regressions.
 
 `build-release` repeats bootstrap and verification before creating:
 

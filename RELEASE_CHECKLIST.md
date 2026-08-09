@@ -1,7 +1,7 @@
 # Release Checklist
 
 Status: not release-ready
-Last updated: 2026-08-08
+Last updated: 2026-08-09
 
 ## Compatibility and recovery
 
@@ -12,6 +12,9 @@ Last updated: 2026-08-08
 - [x] A second BIP39 library validates every mnemonic.
 - [x] Two independent wallet libraries agree on BIP32 fingerprints and BIP84 addresses.
 - [x] The isolated production API matches all 27 vectors and 108 rotations without exposing raw entropy.
+- [x] Recovery profile check-code v1 has a separate normative specification,
+      public vectors, independent Python/TypeScript references, and no BIP32 or
+      authentication claim.
 - [ ] Test-mode hardware-wallet acceptance is complete without real funds.
 - [x] An independent reviewer reproduced the words using the published specification alone.
 
@@ -37,6 +40,15 @@ Last updated: 2026-08-08
 - [ ] Outbound-request E2E test passes for the complete wallet flow.
 - [ ] No DiceKey, entropy, or mnemonic is persisted, logged, transmitted, or placed in URLs/history.
 - [x] The isolated derivation API deletes its native `Secret` and wipes temporary and owned entropy byte arrays on reviewed success and cleanup-error paths.
+- [x] The wallet-scanner foundation isolates each attempt, rejects or surfaces
+      every acquisition uncertainty, avoids global DiceKey stores, correlates
+      worker replies, makes capture inert before callback, and provides bounded
+      confirmed-or-failed cleanup plus fixed pre-terminal worker/WASM failure
+      handling without an erasure overclaim.
+- [x] The pure recovery-flow foundation enforces two distinct readings,
+      first/second acquisition-release gates, four-rotation comparison without
+      tie guessing, concealed derivation, explicit reveal state, unbiased
+      backup challenges, and absorbing clear.
 - [ ] No automatic clipboard access; default wallet flow has no copy or QR export.
 - [ ] Explicit reveal, backup verification, and clear/exit behavior pass.
 - [ ] Web CSP and service-worker controls pass review.

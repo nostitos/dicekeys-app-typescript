@@ -13,11 +13,11 @@ const baseline = {
   success: true,
   numFailedTestSuites: 0,
   numFailedTests: 0,
-  numTotalTestSuites: 14,
-  numPassedTestSuites: 14,
+  numTotalTestSuites: 19,
+  numPassedTestSuites: 19,
   numPendingTestSuites: 0,
-  numTotalTests: 1712,
-  numPassedTests: 1712,
+  numTotalTests: 1843,
+  numPassedTests: 1843,
   numPendingTests: 0,
   numTodoTests: 0,
 };
@@ -26,9 +26,9 @@ try {
   await writeFile(resultPath, `${JSON.stringify(baseline)}\n`);
   if (invoke().status !== 0) throw new Error("complete Jest fixture did not verify");
   for (const mutation of [
-    { numPassedTests: 1711, numPendingTests: 1 },
-    { numPassedTests: 1711, numTodoTests: 1 },
-    { numPassedTestSuites: 13, numPendingTestSuites: 1 },
+    { numPassedTests: 1842, numPendingTests: 1 },
+    { numPassedTests: 1842, numTodoTests: 1 },
+    { numPassedTestSuites: 18, numPendingTestSuites: 1 },
   ]) {
     await writeFile(resultPath, `${JSON.stringify({ ...baseline, ...mutation })}\n`);
     if (invoke().status === 0) {

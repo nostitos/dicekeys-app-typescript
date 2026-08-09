@@ -13,8 +13,24 @@ import type {
 import {
   renderFacesRead
 } from "./renderFacesRead";
-import { DiceKeyMemoryStore } from "../../state";
+import { DiceKeyMemoryStore } from "../../state/stores/DiceKeyMemoryStore";
+import {
+  evaluateWalletRecoveryScannerRead,
+  type WalletRecoveryScanResult,
+} from "./wallet-recovery-scanner-policy";
+import { wipeScannerFaceImageResponse } from "./wallet-recovery-scanner-worker-session-handler";
 
+
+export type DiceKeyScannerMode = "legacy" | "wallet-recovery";
+export const scannerAttemptKeyForMode = (
+  scanMode?: DiceKeyScannerMode,
+): DiceKeyScannerMode => scanMode ?? "legacy";
+
+export interface DiceKeyFrameProcessorCallbacks {
+  readonly onFacesRead?: (facesRead: TupleOf25Items<FaceRead>) => void;
+  readonly onDiceKeyRead?: (diceKey: DiceKeyWithoutKeyId) => void;
+  readonly onWalletRecoveryScan?: (result: WalletRecoveryScanResult) => void;
+}
 
 
 const validateFaceRead = (faceRead: FaceRead): OrientedFace => {
@@ -55,18 +71,81 @@ export class DiceKeyFrameProcessorState {
 
   public onFacesRead?: (facesRead: TupleOf25Items<FaceRead>) => void
   public onDiceKeyRead?: (diceKey: DiceKeyWithoutKeyId) => void
+  public onWalletRecoveryScan?: (result: WalletRecoveryScanResult) => void
+  public walletRecoveryScanResult?: WalletRecoveryScanResult;
+  private disposed = false;
+  private readonly scanMode: DiceKeyScannerMode;
 
-  constructor({onFacesRead, onDiceKeyRead}: {
-    onFacesRead?: (facesRead: TupleOf25Items<FaceRead>) => void
-    onDiceKeyRead?: (diceKey: DiceKeyWithoutKeyId) => void
+  constructor({onFacesRead, onDiceKeyRead, onWalletRecoveryScan, scanMode = "legacy"}:
+    DiceKeyFrameProcessorCallbacks & {
+    scanMode?: DiceKeyScannerMode;
   }) {
-    this.onDiceKeyRead = onDiceKeyRead;
-    this.onFacesRead = onFacesRead;
+    this.scanMode = scanMode;
+    this.onDiceKeyRead = scanMode === "legacy" ? onDiceKeyRead : undefined;
+    this.onFacesRead = scanMode === "legacy" ? onFacesRead : undefined;
+    this.onWalletRecoveryScan =
+      scanMode === "wallet-recovery" ? onWalletRecoveryScan : undefined;
     makeAutoObservable(this, {
       onFacesRead: false,
       onDiceKeyRead: false,
+      onWalletRecoveryScan: false,
     });
   }
+
+  /** React StrictMode may replay commit cleanup/setup on the same state object. */
+  activate = action(({
+    onFacesRead,
+    onDiceKeyRead,
+    onWalletRecoveryScan,
+  }: DiceKeyFrameProcessorCallbacks): void => {
+    if (!this.disposed) return;
+    this.disposed = false;
+    this.onDiceKeyRead = this.scanMode === "legacy" ? onDiceKeyRead : undefined;
+    this.onFacesRead = this.scanMode === "legacy" ? onFacesRead : undefined;
+    this.onWalletRecoveryScan = this.scanMode === "wallet-recovery"
+      ? onWalletRecoveryScan
+      : undefined;
+  });
+
+  private clearFacesRead = (facesRead?: FaceRead[]): void => {
+    facesRead?.forEach((faceRead) => {
+      const faceWithImage = faceRead as FaceReadWithImageIfErrorFound;
+      try { faceWithImage.squareImageAsRgbaArray?.fill(0); } catch {}
+      try { faceWithImage.squareImageAsRgbaArray = undefined; } catch {}
+    });
+  };
+
+  private replaceBestFacesRead = (facesRead: FaceRead[]): void => {
+    const previousBestFacesRead = this.bestFacesRead;
+    this.bestFacesRead = facesRead;
+    if (
+      previousBestFacesRead !== facesRead &&
+      previousBestFacesRead !== this.facesRead
+    ) {
+      this.clearFacesRead(previousBestFacesRead);
+    }
+  };
+
+  dispose = action((): void => {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.clearFacesRead(this.facesRead);
+    if (this.bestFacesRead !== this.facesRead) {
+      this.clearFacesRead(this.bestFacesRead);
+    }
+    this.facesRead = undefined;
+    this.bestFacesRead = undefined;
+    this.frameProcessedTimesMs.splice(0);
+    this.msSinceErrorsNarrowedToJustBitErrors = undefined;
+    this.framesSinceErrorsNarrowedToJustBitErrors = undefined;
+    this.onFacesRead = undefined;
+    this.onDiceKeyRead = undefined;
+    this.onWalletRecoveryScan = undefined;
+    this.walletRecoveryScanResult = undefined;
+    this.scanningSuccessfulEnoughToTerminate = false;
+    this.framesPerSecond = 0;
+    this.frameSize = {width: 0, height: 0};
+  });
 
   private scanningSuccessful = action ( (): true => {
     this.scanningSuccessfulEnoughToTerminate = true;
@@ -97,7 +176,24 @@ export class DiceKeyFrameProcessorState {
    *       of trying to get a better image.
    */
   private processFacesRead = action ( (facesRead?: FaceRead[]): boolean => {
+    if (this.disposed) return false;
+    if (this.facesRead !== facesRead && this.facesRead !== this.bestFacesRead) {
+      this.clearFacesRead(this.facesRead);
+    }
     this.facesRead = facesRead;
+    if (this.scanMode === "wallet-recovery") {
+      const result = evaluateWalletRecoveryScannerRead(facesRead);
+      this.walletRecoveryScanResult = result;
+      this.scanningSuccessfulEnoughToTerminate = result.status !== "rescan";
+      const onWalletRecoveryScan = this.onWalletRecoveryScan;
+      if (result.status !== "rescan") {
+        // Clear before calling external code so a throw or reentrant frame
+        // cannot deliver the terminal candidate more than once.
+        this.onWalletRecoveryScan = undefined;
+      }
+      onWalletRecoveryScan?.(result);
+      return this.scanningSuccessfulEnoughToTerminate;
+    }
     // Can't finish if there isn't a majority value for each face.
     if (!allFacesReadHaveMajorityValues(facesRead)) {
       this.msSinceErrorsNarrowedToJustBitErrors = undefined;
@@ -107,7 +203,7 @@ export class DiceKeyFrameProcessorState {
     const errorTypes = allDiceErrorTypes(facesRead);
     if (errorTypes.length === 0) {
       // All faces have majority values and no errors found -- we're done
-      this.bestFacesRead = facesRead;
+      this.replaceBestFacesRead(facesRead!);
       return this.scanningSuccessful();
     }
 
@@ -130,8 +226,9 @@ export class DiceKeyFrameProcessorState {
 
     // Require at last 1 second and 4 frames to be processed before
     // giving up on correcting the error.
-    if (!this.bestFacesRead || allDiceErrorTypes(this.bestFacesRead).length >= errorTypes.length)
-    this.bestFacesRead = facesRead;
+    if (!this.bestFacesRead || allDiceErrorTypes(this.bestFacesRead).length >= errorTypes.length) {
+      this.replaceBestFacesRead(facesRead!);
+    }
     if (
       Date.now() - this.msSinceErrorsNarrowedToJustBitErrors > 1000 &&
       ++this.framesSinceErrorsNarrowedToJustBitErrors >= 4
@@ -147,8 +244,14 @@ export class DiceKeyFrameProcessorState {
    * overlay image above the video image.
    */
   handleProcessedCameraFrame = action ( (response: ProcessFrameResponse, overlayCanvasCtx: CanvasRenderingContext2D ): void => {
+    if (this.disposed) {
+      wipeScannerFaceImageResponse(response);
+      return;
+    }
+    try {
     const {width, height, facesReadObjectArray, exception} = response;
     if (exception != null) {
+      if (this.scanMode === "wallet-recovery") this.processFacesRead(undefined);
       return;
     }
 
@@ -166,17 +269,40 @@ export class DiceKeyFrameProcessorState {
       }
     }
 
-    const facesRead = facesReadObjectArray?.map( faceReadObject => {
-      const faceRead: FaceReadWithImageIfErrorFound = FaceRead.fromJsonObject(faceReadObject);
-      faceRead.squareImageAsRgbaArray = faceReadObject.squareImageAsRgbaArray;
-      return faceRead;
-    }) as TupleOf25Items<FaceReadWithImageIfErrorFound>;
+    let facesRead: TupleOf25Items<FaceReadWithImageIfErrorFound> | undefined;
+    const convertedFacesRead: FaceReadWithImageIfErrorFound[] = [];
+    try {
+      facesReadObjectArray?.forEach( faceReadObject => {
+        const faceRead: FaceReadWithImageIfErrorFound = FaceRead.fromJsonObject(faceReadObject);
+        faceRead.squareImageAsRgbaArray = faceReadObject.squareImageAsRgbaArray;
+        faceReadObject.squareImageAsRgbaArray = undefined;
+        convertedFacesRead.push(faceRead);
+      });
+      if (convertedFacesRead.length === 25) {
+        facesRead = convertedFacesRead as TupleOf25Items<FaceReadWithImageIfErrorFound>;
+      } else {
+        this.clearFacesRead(convertedFacesRead);
+        facesRead = undefined;
+      }
+    } catch {
+      this.clearFacesRead(convertedFacesRead);
+      if (this.scanMode === "wallet-recovery") {
+        this.processFacesRead(undefined);
+        return;
+      }
+      throw new Error("Invalid scanner response");
+    }
     this.processFacesRead(facesRead);
 
     // Render the frame onto the screen
    overlayCanvasCtx.clearRect(0, 0, overlayCanvasCtx.canvas.width, overlayCanvasCtx.canvas.height);
     if (this.facesRead) {
       renderFacesRead(overlayCanvasCtx, this.facesRead, {sourceImageSize: {width, height}});
+    }
+    } finally {
+      // Any image not explicitly transferred into an owned FaceRead is wiped,
+      // including disposed, exceptional, and partially converted responses.
+      wipeScannerFaceImageResponse(response);
     }
   });
 }

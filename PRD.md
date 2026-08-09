@@ -1,8 +1,8 @@
 # DiceKeys Wallet Recovery Product Requirements
 
-Status: approved project direction; implementation gated on Phase 0 audit and Phase 1 specification review
+Status: approved project direction; Phases 0-3 and the Phase 4 recovery foundation complete; user-facing recovery UI not started
 Profile: `DK-BIP39-24-v1`
-Last updated: 2026-08-08
+Last updated: 2026-08-09
 
 ## Goal
 
@@ -29,7 +29,8 @@ The primary action is `Create Bitcoin wallet recovery words`. The release flow m
 1. Explain the consequences of exposing the recovery words.
 2. Obtain a complete DiceKey reading.
 3. Require an independent second reading and compare it modulo physical rotation.
-4. Show the profile identifier and a non-secret verification fingerprint.
+4. Show the profile identifier and the versioned Recovery profile check code,
+   with its comparison-only and privacy limitations explained.
 5. Require an explicit reveal action before displaying a stable numbered 24-word grid.
 6. Verify the user's backup before completion.
 7. Clear the active secret-generation state and return to a neutral screen.
@@ -37,7 +38,7 @@ The primary action is `Create Bitcoin wallet recovery words`. The release flow m
 ## Security requirements
 
 - Derivation must work with networking disabled.
-- No DiceKey, derived entropy, or mnemonic may be logged, transmitted, or persisted by the wallet flow.
+- No DiceKey, derived entropy, mnemonic, or stable Recovery profile check code may be logged, transmitted, or persisted by the wallet flow.
 - The normal wallet flow must not copy to the clipboard or produce a QR code.
 - Ambiguous or malformed input must fail closed; no wallet generation may use an automatic best guess.
 - Web and Electron builds must enforce the controls in `SECURITY_REVIEW.md`.

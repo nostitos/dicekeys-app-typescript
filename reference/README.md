@@ -1,4 +1,4 @@
-# DK-BIP39-24-v1 reference implementations
+# Wallet recovery reference implementations
 
 These are standalone recovery references for the byte-level profile in
 [`../spec/DK-BIP39-24-v1.md`](../spec/DK-BIP39-24-v1.md). Neither implementation
@@ -18,7 +18,7 @@ python3 reference/dk_bip39_24_v1.py '<75-character-DiceKey-HRF>'
 ```
 
 The TypeScript file deliberately stays within JavaScript-compatible TypeScript,
-so the repository's Node 20 baseline can execute it without transpilation:
+so the pinned Node 22 runtime can execute it without transpilation:
 
 ```sh
 node reference/dk_bip39_24_v1.ts --self-test
@@ -49,6 +49,24 @@ scanner ambiguity policy metadata. The frozen Phase 1 corpus contains 27 valid
 vectors (including the five historical Phase 0 anchors), 108 physical-rotation
 derivations, and 13 invalid cases. The cross-implementation test checks every
 one of them.
+
+## Recovery profile check code v1
+
+The presentation-only check code is specified separately in
+[`../spec/RecoveryProfileCheckCode-v1.md`](../spec/RecoveryProfileCheckCode-v1.md).
+It does not change `DK-BIP39-24-v1`, expose BIP32 metadata, or act as
+authentication. Run the independent references with:
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B reference/recovery_profile_check_code_v1.py
+node reference/recovery_profile_check_code_v1.ts --self-test
+```
+
+Both references verify the exact domain/profile preimage, all 27 public
+mnemonics and 108 rotation associations, strict canonical mnemonic input, the
+full SHA-256 digests, and the formatted 48-bit codes. The combined unittest
+discovery command above currently runs 10 tests across the derivation-profile
+and recovery-check-code references.
 
 ## TypeScript BLAKE2b note
 
