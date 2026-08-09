@@ -22,6 +22,78 @@ export const emptyGlobalNpmrc = join(cacheRoot, "npmrc-global-empty");
 export const buildHomeDirectory = join(cacheRoot, "home");
 export const buildTemporaryDirectory = join(cacheRoot, "tmp");
 export const cleanupQuarantineRoot = join(cacheRoot, "quarantine");
+export const authoritativeBuildPathEnvironment = Object.freeze({
+  REPOSITORY_ROOT: repositoryRoot,
+  HOME: buildHomeDirectory,
+  USERPROFILE: buildHomeDirectory,
+  APPDATA: join(buildHomeDirectory, "AppData", "Roaming"),
+  LOCALAPPDATA: join(buildHomeDirectory, "AppData", "Local"),
+  TEMP: buildTemporaryDirectory,
+  TMP: buildTemporaryDirectory,
+  TMPDIR: buildTemporaryDirectory,
+  XDG_CACHE_HOME: join(cacheRoot, "xdg"),
+  XDG_CONFIG_HOME: join(cacheRoot, "xdg-config"),
+  npm_config_userconfig: emptyUserNpmrc,
+  npm_config_globalconfig: emptyGlobalNpmrc,
+  npm_config_cache: join(cacheRoot, "npm"),
+  electron_config_cache: join(cacheRoot, "electron"),
+  ELECTRON_CACHE: join(cacheRoot, "electron"),
+  ELECTRON_BUILDER_CACHE: join(cacheRoot, "electron-builder"),
+});
+
+const windowsBuildPathIdentity = (value) => {
+  if (typeof value !== "string" || value.includes("\0")) return undefined;
+  let drive;
+  let separator;
+  let tail;
+  const nativeMatch = /^([A-Za-z]):([\\/])(.*)$/.exec(value);
+  if (nativeMatch) {
+    [, drive, separator, tail] = nativeMatch;
+    const otherSeparator = separator === "\\" ? "/" : "\\";
+    if (tail.includes(otherSeparator)) return undefined;
+  } else {
+    const msysMatch = /^\/([A-Za-z])\/(.*)$/.exec(value);
+    if (!msysMatch) return undefined;
+    [, drive, tail] = msysMatch;
+    separator = "/";
+    if (tail.includes("\\")) return undefined;
+  }
+  const segments = tail.split(separator);
+  if (segments.some((segment) => segment === "" || segment === "." || segment === "..")) {
+    return undefined;
+  }
+  return `${drive}:\\${segments.join("\\")}`.toLowerCase();
+};
+
+export const isExpectedBuildPath = (
+  value,
+  expected,
+  platform = process.platform,
+) => {
+  if (platform !== "win32") return value === expected;
+  const valueIdentity = windowsBuildPathIdentity(value);
+  const expectedIdentity = windowsBuildPathIdentity(expected);
+  return expectedIdentity !== undefined && valueIdentity === expectedIdentity;
+};
+
+export const canonicalizeAuthoritativeBuildPathEnvironment = (
+  environment,
+  expectedPaths = authoritativeBuildPathEnvironment,
+  platform = process.platform,
+) => {
+  for (const [expectedKey, expectedPath] of Object.entries(expectedPaths)) {
+    const matchingKeys = Object.keys(environment).filter((key) => key === expectedKey);
+    if (matchingKeys.length !== 1) {
+      throw new Error(`authoritative build path is missing or ambiguous: ${expectedKey}`);
+    }
+    const [actualKey] = matchingKeys;
+    if (!isExpectedBuildPath(environment[actualKey], expectedPath, platform)) {
+      throw new Error(`authoritative build path differs: ${expectedKey}`);
+    }
+    environment[expectedKey] = expectedPath;
+  }
+  return environment;
+};
 
 const isRetainedInheritedEnvironmentKey = (key) => {
   const normalized = key.toUpperCase();

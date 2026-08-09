@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import {
+  authoritativeBuildPathEnvironment,
   cacheRoot,
+  canonicalizeAuthoritativeBuildPathEnvironment,
   emptyGlobalNpmrc,
   emptyUserNpmrc,
   isAllowedBuildEnvironmentKey,
@@ -8,6 +10,7 @@ import {
   isHostileBuildEnvironmentKey,
   isSensitiveEnvironmentKey,
   isCanonicalRuntimeEnvironmentEntry,
+  isExpectedBuildPath,
   isWindowsRuntimeEnvironmentKey,
   runNpm,
 } from "./lib/build-contract.mjs";
@@ -64,6 +67,7 @@ const surviving = Object.keys(process.env)
 if (surviving.length) {
   throw new Error(`credential or signing environment survived sanitization: ${surviving.join(", ")}`);
 }
+canonicalizeAuthoritativeBuildPathEnvironment(process.env);
 if (process.env.CSC_IDENTITY_AUTO_DISCOVERY !== "false") {
   throw new Error("CSC_IDENTITY_AUTO_DISCOVERY must be forced to false");
 }
@@ -102,7 +106,7 @@ for (const [key, expected] of Object.entries(expectedEnvironment)) {
 const npmConfiguration = JSON.parse(
   runNpm(["config", "list", "--json"], { capture: true, env: process.env }),
 );
-for (const [key, expected] of Object.entries({
+const expectedNpmConfiguration = {
   userconfig: emptyUserNpmrc,
   globalconfig: emptyGlobalNpmrc,
   registry: "https://registry.npmjs.org/",
@@ -112,8 +116,18 @@ for (const [key, expected] of Object.entries({
   "update-notifier": false,
   "ignore-scripts": false,
   offline: process.env.DICEKEYS_BUILD_OFFLINE === "true",
-})) {
-  if (npmConfiguration[key] !== expected) {
+};
+const npmPathConfiguration = {
+  userconfig: authoritativeBuildPathEnvironment.npm_config_userconfig,
+  globalconfig: authoritativeBuildPathEnvironment.npm_config_globalconfig,
+  cache: authoritativeBuildPathEnvironment.npm_config_cache,
+};
+for (const [key, expected] of Object.entries(expectedNpmConfiguration)) {
+  const matches =
+    key in npmPathConfiguration
+      ? isExpectedBuildPath(npmConfiguration[key], npmPathConfiguration[key])
+      : npmConfiguration[key] === expected;
+  if (!matches) {
     throw new Error(
       `npm config precedence differs for ${key}: expected ${JSON.stringify(expected)}, found ${JSON.stringify(npmConfiguration[key])}`,
     );

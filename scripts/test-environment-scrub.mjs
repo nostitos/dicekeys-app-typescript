@@ -2,13 +2,16 @@
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import {
+  authoritativeBuildPathEnvironment,
   cacheRoot,
+  canonicalizeAuthoritativeBuildPathEnvironment,
   commandEnvironment,
   emptyGlobalNpmrc,
   emptyUserNpmrc,
   isAllowedBuildEnvironmentKey,
   isCanonicalRuntimeEnvironmentEntry,
   isHostileBuildEnvironmentKey,
+  isExpectedBuildPath,
   isSensitiveEnvironmentKey,
   isWindowsRuntimeEnvironmentKey,
   repositoryRoot,
@@ -173,6 +176,11 @@ for (const [key, expected] of Object.entries({
     throw new Error(`JavaScript environment did not force ${key}=${expected}`);
   }
 }
+for (const [key, expected] of Object.entries(authoritativeBuildPathEnvironment)) {
+  if (javascriptEnvironment[key] !== expected) {
+    throw new Error(`JavaScript environment did not force authoritative build path ${key}`);
+  }
+}
 if ("npm_config_offline" in javascriptEnvironment || "NPM_CONFIG_OFFLINE" in javascriptEnvironment) {
   throw new Error("JavaScript online mode retained an inherited npm offline value");
 }
@@ -191,6 +199,87 @@ const unexpectedNpmKeys = Object.keys(javascriptEnvironment).filter(
 );
 if (unexpectedNpmKeys.length) {
   throw new Error(`JavaScript environment retained arbitrary npm config: ${unexpectedNpmKeys.join(", ")}`);
+}
+
+const windowsPathTargets = Object.fromEntries(
+  Object.keys(authoritativeBuildPathEnvironment).map((key, index) => [
+    key,
+    `D:\\a\\dicekeys-app\\controlled-${index}`,
+  ]),
+);
+const windowsPathSerializations = [
+  (value) => value,
+  (value) => value.replaceAll("\\", "/"),
+  (value) => `/${value[0].toLowerCase()}${value.slice(2).replaceAll("\\", "/")}`,
+  (value) => value.toUpperCase(),
+];
+for (const serialize of windowsPathSerializations) {
+  const environment = Object.fromEntries(
+    Object.entries(windowsPathTargets).map(([key, value]) => [key, serialize(value)]),
+  );
+  canonicalizeAuthoritativeBuildPathEnvironment(environment, windowsPathTargets, "win32");
+  for (const [key, expected] of Object.entries(windowsPathTargets)) {
+    if (environment[key] !== expected) {
+      throw new Error(`Windows path serialization did not canonicalize ${key}`);
+    }
+  }
+}
+
+for (const [value, expected, platform, accepted] of [
+  ["D:\\a\\repo\\.cache\\npm", "D:\\a\\repo\\.cache\\npm", "win32", true],
+  ["D:/a/repo/.cache/npm", "D:\\a\\repo\\.cache\\npm", "win32", true],
+  ["/d/a/repo/.cache/npm", "D:\\a\\repo\\.cache\\npm", "win32", true],
+  ["D:\\a\\repo\\.\\.cache\\npm", "D:\\a\\repo\\.cache\\npm", "win32", false],
+  ["D:\\a\\repo\\.cache\\other\\..\\npm", "D:\\a\\repo\\.cache\\npm", "win32", false],
+  ["/d/a/repo/.cache/other/../npm", "D:\\a\\repo\\.cache\\npm", "win32", false],
+  ["/d//a/repo/.cache/npm", "D:\\a\\repo\\.cache\\npm", "win32", false],
+  ["D:\\a/repo\\.cache\\npm", "D:\\a\\repo\\.cache\\npm", "win32", false],
+  ["D:\\\\a\\repo\\.cache\\npm", "D:\\a\\repo\\.cache\\npm", "win32", false],
+  ["D:\\a\\repo\\.cache\\npm\\", "D:\\a\\repo\\.cache\\npm", "win32", false],
+  ["D:relative", "D:\\a\\repo\\.cache\\npm", "win32", false],
+  ["relative\\npm", "D:\\a\\repo\\.cache\\npm", "win32", false],
+  ["\\\\server\\share\\npm", "D:\\a\\repo\\.cache\\npm", "win32", false],
+  ["\\\\?\\D:\\a\\repo\\.cache\\npm", "D:\\a\\repo\\.cache\\npm", "win32", false],
+  ["D:\\a\\repo\\.cache\\npm\0ignored", "D:\\a\\repo\\.cache\\npm", "win32", false],
+  ["D:\\a\\repo\\.cache\\npm-escape", "D:\\a\\repo\\.cache\\npm", "win32", false],
+  ["/tmp/build", "/tmp/build", "linux", true],
+  ["/tmp/other/../build", "/tmp/build", "linux", false],
+  ["/tmp/build/", "/tmp/build", "darwin", false],
+]) {
+  if (isExpectedBuildPath(value, expected, platform) !== accepted) {
+    throw new Error(`build path identity policy returned the wrong result for ${value}`);
+  }
+}
+
+for (const key of Object.keys(windowsPathTargets)) {
+  const hostileEnvironment = { ...windowsPathTargets, [key]: "D:\\outside\\controlled" };
+  let rejected = false;
+  try {
+    canonicalizeAuthoritativeBuildPathEnvironment(
+      hostileEnvironment,
+      windowsPathTargets,
+      "win32",
+    );
+  } catch {
+    rejected = true;
+  }
+  if (!rejected) throw new Error(`Windows path canonicalization accepted an escape for ${key}`);
+}
+const alternateCaseNpmEnvironment = { ...windowsPathTargets };
+alternateCaseNpmEnvironment.NPM_CONFIG_CACHE = alternateCaseNpmEnvironment.npm_config_cache;
+delete alternateCaseNpmEnvironment.npm_config_cache;
+let alternateCaseNpmKeyRejected = false;
+try {
+  canonicalizeAuthoritativeBuildPathEnvironment(
+    alternateCaseNpmEnvironment,
+    windowsPathTargets,
+    "win32",
+  );
+} catch {
+  alternateCaseNpmKeyRejected = true;
+}
+if (!alternateCaseNpmKeyRejected) {
+  throw new Error("Windows path canonicalization weakened exact npm environment key spelling");
 }
 
 const verifierPath = join(repositoryRoot, "scripts", "verify-sanitized-environment.mjs");
