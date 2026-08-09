@@ -66,4 +66,4 @@ if [[ $before_state != "$after_state" ]]; then
   echo "error: check mutated the tracked or untracked source state" >&2
   exit 1
 fi
-echo "check complete: reference parity, 19 Jest suites/1843 tests, web, Electron, and Forge check-only builds passed"
+echo "check complete: reference parity, 23 Jest suites/1998 tests, web, Electron, and Forge check-only builds passed"

@@ -38,6 +38,9 @@ import type {
 const freezeState = <T extends RecoveryFlowState>(state: T): T =>
   Object.freeze(state);
 
+const validatedFaceSnapshots = new WeakSet<object>();
+const validatedSingleFaceSnapshots = new WeakSet<object>();
+
 const isRecord = (candidate: unknown): candidate is Record<string, unknown> =>
   typeof candidate === "object" && candidate != null;
 
@@ -65,10 +68,13 @@ const readExactOwnDataValues = (
   }
 };
 
-const snapshotStrictFace = (
+export const snapshotStrictWalletRecoveryFace = (
   candidate: unknown,
 ): RecoveryDiceKeyFace | undefined => {
   if (!isRecord(candidate)) return undefined;
+  if (validatedSingleFaceSnapshots.has(candidate)) {
+    return candidate as unknown as RecoveryDiceKeyFace;
+  }
   const values = readExactOwnDataValues(candidate, [
     "letter",
     "digit",
@@ -88,26 +94,46 @@ const snapshotStrictFace = (
   ) {
     return undefined;
   }
-  return Object.freeze({
+  const snapshot = Object.freeze({
     letter,
     digit,
     orientationAsLowercaseLetterTrbl: orientation,
   }) as RecoveryDiceKeyFace;
+  validatedSingleFaceSnapshots.add(snapshot);
+  return snapshot;
 };
 
 const freezeValidatedFaces = (
   faces: DiceKeyFaces,
-): DiceKeyFaces => Object.freeze(faces.map((face) => Object.freeze({
-  letter: face.letter,
-  digit: face.digit,
-  orientationAsLowercaseLetterTrbl:
-    face.orientationAsLowercaseLetterTrbl,
-}))) as unknown as DiceKeyFaces;
+): DiceKeyFaces => {
+  const snapshot = Object.freeze(faces.map((face) => {
+    const strictFace = snapshotStrictWalletRecoveryFace(face);
+    if (strictFace == null) {
+      throw new TypeError("Validated DiceKey face snapshot was rejected");
+    }
+    return strictFace;
+  })) as unknown as DiceKeyFaces;
+  validatedFaceSnapshots.add(snapshot);
+  return snapshot;
+};
 
-const snapshotValidatedFaces = (
+/**
+ * Create the one immutable, descriptor-read snapshot used at trust boundaries.
+ * Snapshots created here are returned by identity on subsequent validation so
+ * an adapter and this flow can share exactly one reviewed-face object without
+ * ever trusting ordinary property reads from the original input.
+ */
+export const snapshotValidatedWalletRecoveryFaces = (
   candidate: unknown,
 ): DiceKeyFaces | undefined => {
   try {
+    if (
+      typeof candidate === "object" &&
+      candidate != null &&
+      validatedFaceSnapshots.has(candidate)
+    ) {
+      return candidate as DiceKeyFaces;
+    }
     if (!Array.isArray(candidate)) return undefined;
     const values = readExactOwnDataValues(candidate, [
       ...Array.from({ length: 25 }, (_, index) => String(index)),
@@ -116,7 +142,7 @@ const snapshotValidatedFaces = (
     if (values == null || values[25] !== 25) return undefined;
     const faces: RecoveryDiceKeyFace[] = [];
     for (let index = 0; index < 25; index += 1) {
-      const face = snapshotStrictFace(values[index]);
+      const face = snapshotStrictWalletRecoveryFace(values[index]);
       if (face == null) return undefined;
       faces.push(face);
     }
@@ -275,7 +301,7 @@ const parseAcquisition = (candidate: unknown): AcquisitionParseResult => {
         : { kind: "invalid-acquisition" };
     }
     const acquisitionId = values[0];
-    const faces = snapshotValidatedFaces(values[1]);
+    const faces = snapshotValidatedWalletRecoveryFaces(values[1]);
     const dispose = values[values.length - 2];
     const cleanupSettlement = values[values.length - 1];
     if (!isPromise(cleanupSettlement)) {
@@ -572,7 +598,7 @@ export class WalletRecoveryFlow {
     }
     let corrected = false;
     if (correctedFace !== undefined) {
-      const cleanCorrection = snapshotStrictFace(correctedFace);
+      const cleanCorrection = snapshotStrictWalletRecoveryFace(correctedFace);
       if (cleanCorrection == null) {
         this.fail("INVALID_ACQUISITION");
         return;
@@ -707,6 +733,9 @@ export class WalletRecoveryFlow {
   }
 
   public chooseBackupVerification(mode: BackupVerificationMode): void {
+    if (mode !== "six-word-challenge" && mode !== "full-entry") {
+      throw new RecoveryTransitionError("ILLEGAL_TRANSITION");
+    }
     if (
       this.currentState.kind !== "backup-choice" &&
       this.currentState.kind !== "six-word-challenge" &&
@@ -915,7 +944,7 @@ export class WalletRecoveryFlow {
 
   private revalidateReviewedFaces(stage: "first" | "second"): boolean {
     const candidate = stage === "first" ? this.firstFaces : this.secondFaces;
-    const validated = snapshotValidatedFaces(candidate);
+    const validated = snapshotValidatedWalletRecoveryFaces(candidate);
     if (validated == null) {
       this.fail("INVALID_ACQUISITION");
       return false;

@@ -12,7 +12,7 @@ Last updated: 2026-08-09
 - [x] A second BIP39 library validates every mnemonic.
 - [x] Two independent wallet libraries agree on BIP32 fingerprints and BIP84 addresses.
 - [x] The isolated production API matches all 27 vectors and 108 rotations without exposing raw entropy.
-- [x] Recovery profile check-code v1 has a separate normative specification,
+- [x] Recovery profile check code v1 has a separate normative specification,
       public vectors, independent Python/TypeScript references, and no BIP32 or
       authentication claim.
 - [ ] Test-mode hardware-wallet acceptance is complete without real funds.
@@ -49,8 +49,9 @@ Last updated: 2026-08-09
       first/second acquisition-release gates, four-rotation comparison without
       tie guessing, concealed derivation, explicit reveal state, unbiased
       backup challenges, and absorbing clear.
-- [ ] No automatic clipboard access; default wallet flow has no copy or QR export.
-- [ ] Explicit reveal, backup verification, and clear/exit behavior pass.
+- [x] No automatic clipboard access; default wallet flow has no copy or QR export.
+- [x] Explicit reveal, backup verification, and clear/exit behavior pass at the
+      source-reviewed UI boundary; packaged runtime E2E remains open.
 - [ ] Web CSP and service-worker controls pass review.
 - [ ] Electron isolation, sandbox, navigation, protocol, permission, and signing checks pass.
 - [ ] Built artifacts contain no test secrets, analytics URLs, remote scripts, or unintended source maps.
@@ -59,9 +60,9 @@ Last updated: 2026-08-09
 ## Product boundaries
 
 - [x] The reversible layout codec cannot be selected through the wallet API.
-- [ ] The reversible layout codec cannot be selected through the wallet UI.
-- [ ] The normal UI contains no signing, transaction, balance, address, network-wallet, passphrase-storage, SLIP39, or cloud-backup feature.
-- [ ] UI exposes only the 24-word English v1 profile.
+- [x] The reversible layout codec cannot be selected through the dedicated wallet-recovery UI.
+- [x] The dedicated wallet-recovery UI contains no signing, transaction, balance, address, network-wallet, passphrase-storage, SLIP39, or cloud-backup feature.
+- [x] The dedicated wallet-recovery UI exposes only the 24-word English v1 profile.
 
 ## Artifacts
 

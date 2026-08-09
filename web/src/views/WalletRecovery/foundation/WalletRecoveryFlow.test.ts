@@ -15,6 +15,7 @@ import {
   selectRecoveryWordEntries,
 } from "./selectors";
 import type {
+  BackupVerificationMode,
   PhysicalFacePosition,
   RecoveryWordEntry,
   SanitizedDiceKeyAcquisition,
@@ -1251,6 +1252,18 @@ describe("WalletRecoveryFlow", () => {
     flow.chooseBackupVerification("six-word-challenge");
     expect(selectChallengePositions(flow.state)).not.toEqual(firstPositions);
     expect("feedbackCode" in flow.state).toBe(false);
+  });
+
+  test("rejects an unknown backup mode instead of defaulting to full entry", async () => {
+    const flow = new WalletRecoveryFlow(createDependencies());
+    await driveToBackupChoice(flow);
+    const stateBeforeInvalidMode = flow.state;
+
+    expect(() => flow.chooseBackupVerification(
+      "unknown-mode" as BackupVerificationMode,
+    )).toThrow(expect.objectContaining({ code: "ILLEGAL_TRANSITION" }));
+    expect(flow.state).toBe(stateBeforeInvalidMode);
+    expect(flow.state.kind).toBe("backup-choice");
   });
 
   test("full-entry mode requires all 24 positions and verifies word order", async () => {

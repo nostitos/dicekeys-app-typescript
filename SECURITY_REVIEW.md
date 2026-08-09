@@ -1,6 +1,6 @@
 # Security Review
 
-Status: Phase 1 compatibility, Phase 2 build/supply-chain, Phase 3 derivation, and Phase 4 recovery-foundation reviews complete; application adversarial review not started
+Status: Phase 1 compatibility, Phase 2 build/supply-chain, Phase 3 derivation, and Phase 4 recovery-flow source reviews complete; runtime adversarial hardening not started
 Last updated: 2026-08-09
 
 No item in this file is an approval of the current application for wallet recovery.
@@ -97,9 +97,9 @@ string-lifecycle review remain later gates. D-020 now defines a separate
 presentation-only Recovery profile check code; it does not modify the Phase 3
 derivation result or repurpose BIP32 metadata.
 
-## Phase 4 recovery-foundation review
+## Phase 4 recovery-flow review
 
-The approved foundation deliberately separates its invariants from the later
+The approved foundation separates its security-critical invariants from the
 React wizard. `Recovery profile check code v1` has an independent normative
 specification, public vector artifact, Python reference, standalone TypeScript
 reference, and narrow production API. It is domain- and profile-separated from
@@ -141,15 +141,40 @@ tied alignments, drops face
 references before derivation, retains words publicly only in the explicit
 revealed state, uses unbiased WebCrypto sampling for backup challenges, maps
 errors to fixed codes, invalidates stale async completions, and makes clear an
-absorbing state. The combined candidate currently passes 10 Python reference
-tests and 19 Jest suites/1,843 tests with no skipped, todo, or snapshot work.
+absorbing state.
 
-Fresh read-only reviewers approved the integrated foundation with zero
-unresolved findings after all review-discovered boundary and lifecycle defects
-were fixed. This is not approval of a wallet UI or runtime. Navigation, rendering,
-camera permission UX, visual review, actual browser and packaged Electron E2E,
-network denial across the active flow, built-artifact inspection, and final
-mnemonic string-lifetime review remain open.
+The dedicated UI adds one primary home action and a constant
+`/wallet-recovery` route. It renders the foundation state directly, registers
+attempt cleanup authority before any camera discovery or access, keeps each
+attempt's worker, media, watchdogs, result correlation, and cleanup under the
+same identity, and will not advance while cleanup is pending or unconfirmed.
+It requires explicit consent and reveal, presents stable numbered words and the
+comparison-only check code without clipboard or QR controls, verifies a local
+backup, and ends in a neutral cleared receipt that explains the limits of
+JavaScript erasure. Fresh history navigation creates a new ceremony instead of
+restoring cleared or secret-bearing state.
+
+Source review also confirmed that the recovery UI exposes no signing,
+transaction, balance, address, network-wallet, passphrase-storage, SLIP39,
+cloud-backup, reversible-codec, print, persistence, logging, or outbound-request
+surface. Responsive and keyboard contracts cover 375-, 768-, and 1440-pixel
+layouts, visible focus, live camera status, contained scanner controls, and
+focus changes only when the ceremony screen changes. Limited live-browser QA
+verified the route, consent gate, responsive DOM geometry, focus, clear
+receipt, and fresh Back/Forward state without granting camera permission.
+
+The complete candidate passes 10 Python reference tests and 23 Jest suites/
+1,998 tests with no skipped, todo, or snapshot work, plus type checks and web,
+Electron, and Forge builds. Repeated fresh read-only reviews found and closed
+the malformed-input, attempt-correlation, cleanup, camera-ordering, StrictMode,
+buffer-lifetime, responsive, accessibility, navigation, and secret-state
+defects discovered during implementation, then approved the stable source with
+no unresolved finding.
+
+This is not approval of the application for wallet recovery or release. Actual
+real-camera browser execution, packaged Electron E2E, active-flow network
+denial, CSP and Electron hardening, built-artifact inspection, and final runtime
+mnemonic string/cache-lifetime inspection remain open.
 
 ## Phase 0 observations
 
@@ -176,5 +201,7 @@ mnemonic string-lifetime review remain open.
 - Network capture during scan, derivation, display, verification, and clear.
 - Electron permission, navigation, external-protocol, shell, camera, signing, and fuse verification on packaged artifacts.
 - Release-grade resolution of the recorded license, generated-WASM, keytar, Electron, entitlement, and signing blockers.
-- UI/session cache eviction, mnemonic string-copy review, clear/exit behavior, and honest limitations of JavaScript erasure beyond the reviewed Phase 3 byte-array and native-object cleanup.
-- Independent review after implementation, with no self-approval.
+- Runtime UI/session cache eviction and mnemonic string-copy inspection beyond
+  the source-reviewed clear/exit behavior and honest JavaScript-erasure caveat.
+- Fresh independent review of the Phase 5 runtime-hardening candidate, with no
+  self-approval.

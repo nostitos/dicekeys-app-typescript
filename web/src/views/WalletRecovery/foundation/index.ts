@@ -1,4 +1,8 @@
-export { WalletRecoveryFlow } from "./WalletRecoveryFlow";
+export {
+  snapshotStrictWalletRecoveryFace,
+  snapshotValidatedWalletRecoveryFaces,
+  WalletRecoveryFlow,
+} from "./WalletRecoveryFlow";
 export { compareDiceKeysModuloRotation } from "./comparison";
 export { selectSixUniqueRecoveryWordPositions } from "./backupChallenge";
 export {

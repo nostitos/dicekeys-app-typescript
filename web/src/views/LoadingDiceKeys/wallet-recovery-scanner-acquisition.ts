@@ -5,6 +5,7 @@ import type {
 } from "../WalletRecovery/foundation";
 import type {
   WalletRecoveryScanCandidate,
+  WalletRecoveryScanRequiresRescan,
   WalletRecoveryScanResult,
 } from "./wallet-recovery-scanner-policy";
 
@@ -16,16 +17,20 @@ export type WalletRecoveryScannerAcquisitionHandle =
 export interface WalletRecoveryScannerAttemptFailure {
   readonly status: "failed";
   readonly reason: "scanner-attempt-failed";
+  readonly acquisitionId: string;
 }
 
-export const WALLET_RECOVERY_SCANNER_ATTEMPT_FAILED:
-  WalletRecoveryScannerAttemptFailure = Object.freeze({
+export const createWalletRecoveryScannerAttemptFailure = (
+  acquisitionId: string,
+): WalletRecoveryScannerAttemptFailure => Object.freeze({
     status: "failed",
     reason: "scanner-attempt-failed",
+    acquisitionId,
   });
 
 export type WalletRecoveryScannerResult =
-  | WalletRecoveryScanResult
+  | (WalletRecoveryScanCandidate & Readonly<{ acquisitionId: string }>)
+  | (WalletRecoveryScanRequiresRescan & Readonly<{ acquisitionId: string }>)
   | WalletRecoveryScannerAttemptFailure;
 
 export type WalletRecoveryScannerTerminal =
@@ -47,9 +52,6 @@ export const createWalletRecoveryScannerAcquisitionHandle = (
     resolveCleanup = resolve;
     rejectCleanup = reject;
   });
-  // Keep the stable settlement observed even if a caller only needs the
-  // synchronous inerting guarantee. Consumers may still await the same promise.
-  void cleanupSettlement.catch(() => {});
 
   const dispose = (): void => {
     if (disposalStarted) return;
@@ -67,6 +69,16 @@ export const createWalletRecoveryScannerAcquisitionHandle = (
     cleanupSettlement,
   });
 };
+
+/** Correlate every fixed scanner-policy outcome to its mounted attempt. */
+export const scannerResultForAcquisition = (
+  result: WalletRecoveryScanResult,
+  acquisitionId: string,
+): Exclude<WalletRecoveryScannerResult, WalletRecoveryScannerAttemptFailure> =>
+  Object.freeze({
+    ...result,
+    acquisitionId,
+  });
 
 /** A frozen, exact-shape acquisition accepted directly by WalletRecoveryFlow. */
 export const scannerCandidateToSanitizedAcquisition = (

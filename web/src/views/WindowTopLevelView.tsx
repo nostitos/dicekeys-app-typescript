@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React from "react";
-import { WindowTopLevelNavigationState } from "../state/Window";
+import type { WindowTopLevelNavigationState } from "../state/Window";
 import { SelectedDiceKeyViewStateName } from "./WithSelectedDiceKey/SelectedDiceKeyViewState";
 import { SelectedDiceKeyView } from "./WithSelectedDiceKey/SelectedDiceKeyView";
 import { WindowHomeView } from "./WindowHomeView";
@@ -21,6 +21,12 @@ import {
 } from "./SaveOrDeleteDiceKeyViewState";
 import { SecretSharingRecoveryStateName } from "./SimpleSecretSharing/SecretSharingRecoveryState";
 import { SecretSharingRecoveryView } from "./SimpleSecretSharing/SecretSharingRecoveryView";
+import {
+  WalletRecoveryView,
+} from "./WalletRecovery/WalletRecoveryView";
+import {
+  WalletRecoveryViewStateName,
+} from "./WalletRecovery/WalletRecoveryViewState";
 
 export const WindowRoutingView = observer ( ({state}: {state: WindowTopLevelNavigationState}) => {
 
@@ -65,6 +71,13 @@ export const WindowRoutingView = observer ( ({state}: {state: WindowTopLevelNavi
            state.navigateToReplaceSelectedDiceKeyView(await diceKey.withKeyId);
         }}}
       />);
+    case WalletRecoveryViewStateName: return (
+      <WalletRecoveryView
+        state={subViewState}
+        onExit={() => state.exitWalletRecovery(subViewState)}
+        onRestart={() => state.restartWalletRecovery(subViewState)}
+      />
+    );
     default: return (
       <WindowHomeView state={state} />
     );

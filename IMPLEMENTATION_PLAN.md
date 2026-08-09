@@ -1,6 +1,6 @@
 # Implementation Plan
 
-Status: Phases 0, 1, 2, and 3 plus the Phase 4 recovery foundation complete and independently reviewed; user-facing UI not started
+Status: Phases 0 through 4 complete and independently reviewed; Phase 5 security hardening not started
 Last updated: 2026-08-09
 
 ## Working model
@@ -72,22 +72,39 @@ Phase 3 derivation result or repurposing BIP32 metadata.
 ## Phase 4: dedicated recovery flow
 
 Deliverables: explanation, two independent scans, mismatch display, profile and
-Recovery profile check-code confirmation, explicit reveal, stable numbered
+Recovery profile check code v1 confirmation, explicit reveal, stable numbered
 words, backup verification, and clear/exit behavior.
 
-Foundation result: passed independent review separately from the React wizard.
-It freezes
+Foundation result: passed independent review. It freezes
 the check-code specification and independent references; introduces an opt-in,
 per-attempt wallet scanner session with strict uncertainty and bounded cleanup
 policy; and provides a pure recovery state machine for two distinct,
 attempt-bound acquisitions, confirmed release gates, four-rotation comparison,
 concealed derivation, explicit reveal, unbiased backup challenges, and
-absorbing clear. The combined candidate passes 10
-Python reference tests and 19 Jest suites/1,843 tests with no skipped or todo
-work. The final whole-change review reported zero findings. No navigation or
-user-facing recovery screen is included yet.
+absorbing clear.
 
-Gate: the user flow satisfies `PRD.md` without the excluded wallet/network features.
+UI result: passed repeated fresh, read-only review. The dedicated home action
+and `/wallet-recovery` route render every foundation state without a parallel
+step machine. Wallet camera registration precedes discovery; each attempt owns
+its worker, media, watchdogs, result correlation, and cleanup authority.
+Uncertain faces require review or rescan, cleanup must settle before later
+stages, and any late pending or unconfirmed cleanup clears material and blocks
+the ceremony. The interface provides explicit reveal, stable numbered words,
+two local backup-verification modes, comparison-only check-code guidance, keyboard
+focus management, responsive reflow, fresh history restoration, and an honest
+neutral clear receipt. It contains no clipboard, QR, print, network-wallet,
+address, signing, persistence, or reversible-codec surface.
+
+The complete candidate passes 10 Python reference tests and 23 Jest suites/
+1,998 tests with no skipped, todo, or snapshot work, plus type checks and web,
+Electron, and Forge builds. Limited live-browser QA verified the route, consent
+gate, responsive DOM geometry, focus, explicit clear receipt, and fresh
+Back/Forward state without granting camera permission. Real-camera browser
+execution, packaged Electron E2E, active-flow network denial, and built-artifact
+inspection remain Phase 5/6 gates.
+
+Gate: passed for the reviewed source-level flow; runtime and release-candidate
+security gates remain in Phases 5 and 6.
 
 ## Phase 5: security hardening
 

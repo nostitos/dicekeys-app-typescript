@@ -1,5 +1,16 @@
 import { action, makeAutoObservable, observable } from "mobx";
-import type { Camera, CamerasOnThisDevice } from "./CamerasOnThisDevice";
+import {
+  CAMERA_REQUEST_TIMEOUT_MS,
+  CameraAccessException,
+  cameraAccessFailureReasonForError,
+  stopMediaStream,
+  withTimeoutAndLateCleanup,
+} from "./CamerasOnThisDevice";
+import type {
+  Camera,
+  CameraAccessFailureReason,
+  CamerasOnThisDevice,
+} from "./CamerasOnThisDevice";
 
 export class MediaStreamState {
   public _deviceId: string | undefined;
@@ -12,28 +23,68 @@ export class MediaStreamState {
 
   private _supportsFixedFocus: boolean = false;
   get supportsFixedFocus() { return this._supportsFixedFocus }
+  private _failureReason?: CameraAccessFailureReason;
+  get failureReason(): CameraAccessFailureReason | undefined {
+    return this._failureReason;
+  }
   private requestGeneration = 0;
   private disposed = false;
+  private removeMediaStreamLivenessListeners?: () => void;
 
-  private stopMediaStream = (mediaStream?: MediaStream): void => {
-    if (mediaStream == null) return;
-    const tracks = new Set<MediaStreamTrack>();
-    try { mediaStream.getTracks().forEach((track) => tracks.add(track)); } catch {}
-    try { mediaStream.getVideoTracks().forEach((track) => tracks.add(track)); } catch {}
-    tracks.forEach((track) => {
-      try { track.stop(); } catch {}
-    });
-    try {mediaStream.stop()} catch {}
+  private detachMediaStreamLivenessListeners = (): void => {
+    const removeListeners = this.removeMediaStreamLivenessListeners;
+    this.removeMediaStreamLivenessListeners = undefined;
+    try { removeListeners?.(); } catch {}
+  };
+
+  private failActiveMediaStream = action((mediaStream: MediaStream): void => {
+    if (this.disposed || this._mediaStream !== mediaStream) return;
+    this.requestGeneration += 1;
+    this.detachMediaStreamLivenessListeners();
+    this._deviceId = undefined;
+    this._supportsFixedFocus = false;
+    this._mediaStream = undefined;
+    this._failureReason = "camera-error";
+    stopMediaStream(mediaStream);
+  });
+
+  private monitorMediaStreamLiveness = (
+    mediaStream: MediaStream,
+    videoTrack: MediaStreamTrack,
+  ): (() => void) => {
+    if (
+      typeof mediaStream.addEventListener !== "function" ||
+      typeof mediaStream.removeEventListener !== "function" ||
+      typeof videoTrack.addEventListener !== "function" ||
+      typeof videoTrack.removeEventListener !== "function"
+    ) {
+      throw new CameraAccessException("camera-error");
+    }
+    const onInactive = (): void => this.failActiveMediaStream(mediaStream);
+    const onEnded = (): void => this.failActiveMediaStream(mediaStream);
+    mediaStream.addEventListener("inactive", onInactive);
+    try {
+      videoTrack.addEventListener("ended", onEnded);
+    } catch (error) {
+      try { mediaStream.removeEventListener("inactive", onInactive); } catch {}
+      throw error;
+    }
+    return () => {
+      try { mediaStream.removeEventListener("inactive", onInactive); } catch {}
+      try { videoTrack.removeEventListener("ended", onEnded); } catch {}
+    };
   };
 
   activate = action((): void => {
     if (!this.disposed) return;
     this.disposed = false;
     this.requestGeneration += 1;
+    this._failureReason = undefined;
   });
 
   private beginRequest = action((): number | undefined => {
     if (this.disposed) return;
+    this._failureReason = undefined;
     return ++this.requestGeneration;
   });
 
@@ -45,8 +96,10 @@ export class MediaStreamState {
     // }
     this._deviceId = undefined;
     this._supportsFixedFocus = false;
+    this._failureReason = undefined;
     this._mediaStream = undefined;
-    this.stopMediaStream(mediaStream);
+    this.detachMediaStreamLivenessListeners();
+    stopMediaStream(mediaStream);
   });
 
   dispose = action((): void => {
@@ -56,53 +109,130 @@ export class MediaStreamState {
     const mediaStream = this._mediaStream;
     this._deviceId = undefined;
     this._supportsFixedFocus = false;
+    this._failureReason = undefined;
     this._mediaStream = undefined;
-    this.stopMediaStream(mediaStream);
+    this.detachMediaStreamLivenessListeners();
+    stopMediaStream(mediaStream);
   });
 
-  private setDeviceIdAndMediaStream = action ((deviceId: string, mediaStream: MediaStream, supportsFixedFocus: boolean) => {
-    if (this._mediaStream === mediaStream) return;
+  private setDeviceIdAndMediaStream = action ((
+    deviceId: string,
+    mediaStream: MediaStream,
+    supportsFixedFocus: boolean,
+    removeLivenessListeners: () => void,
+  ) => {
+    if (this._mediaStream === mediaStream) {
+      removeLivenessListeners();
+      return;
+    }
     const previousMediaStream = this._mediaStream;
+    this.detachMediaStreamLivenessListeners();
     this._deviceId = deviceId;
     this._mediaStream = mediaStream;
     this._supportsFixedFocus = supportsFixedFocus;
-    this.stopMediaStream(previousMediaStream);
+    this._failureReason = undefined;
+    this.removeMediaStreamLivenessListeners = removeLivenessListeners;
+    stopMediaStream(previousMediaStream);
     // console.log(`Media stream set to`, this._mediaStream);
   });
 
   get defaultDevice(): Camera | undefined { return this.camerasOnThisDevice.cameras[0] }
 
-  setCamera = async(camera: Camera) => {
+  setCamera = async(camera: Camera): Promise<void> => {
     const requestGeneration = this.beginRequest();
     if (requestGeneration == null) return;
-    const {deviceId, capabilities} = camera;
-    // Test if the camera supports manual focus and, if set, set focal distance to up-close
-    const minFocusDistance = capabilities?.focusDistance?.min;
-    const supportsFixedFocus = minFocusDistance != null && 
-      (capabilities?.focusMode ?? []).indexOf("manual") !== -1;
-    const focusConstraints = supportsFixedFocus && minFocusDistance == null ? {} : {
-      advanced: [{focusMode: "manual", focusDistance: {ideal: minFocusDistance, max: minFocusDistance}}]
-    }
-    const mediaTrackConstraints: MediaTrackConstraints = {
-      ...this.defaultMediaTrackConstraints,
-      ...focusConstraints,
-      deviceId,
-    };
-    const mediaStream = await (async () => {
+    let mediaStream: MediaStream | undefined;
+    try {
+      const {deviceId, capabilities} = camera;
+      const minFocusDistance = capabilities?.focusDistance?.min;
+      const supportsFixedFocus = typeof minFocusDistance === "number" &&
+        Number.isFinite(minFocusDistance) &&
+        (capabilities?.focusMode ?? []).includes("manual");
+      const focusConstraints: MediaTrackConstraints = supportsFixedFocus ? {
+        advanced: [{
+          focusMode: "manual",
+          focusDistance: {
+            ideal: minFocusDistance,
+            max: minFocusDistance,
+          },
+        }],
+      } : {};
+      const mediaTrackConstraints: MediaTrackConstraints = {
+        ...this.defaultMediaTrackConstraints,
+        ...focusConstraints,
+        deviceId: { exact: deviceId },
+      };
+      if (typeof navigator.mediaDevices?.getUserMedia !== "function") {
+        throw new CameraAccessException("camera-error");
+      }
+      mediaStream = await withTimeoutAndLateCleanup(
+        () => navigator.mediaDevices.getUserMedia({ video: mediaTrackConstraints }),
+        CAMERA_REQUEST_TIMEOUT_MS,
+        stopMediaStream,
+      );
+
+      let allTracks: MediaStreamTrack[];
+      let videoTracks: MediaStreamTrack[];
       try {
-        return await navigator.mediaDevices.getUserMedia({video: mediaTrackConstraints});
-      } catch (e) {
-        if (e instanceof OverconstrainedError) {
-          console.log("Camera Overconstrained", deviceId, mediaTrackConstraints);
+        if (
+          typeof mediaStream.getTracks !== "function" ||
+          typeof mediaStream.getVideoTracks !== "function"
+        ) {
+          throw new CameraAccessException("camera-error");
         }
-        throw e;
-    }})();
-    if (this.disposed || requestGeneration !== this.requestGeneration) {
-      this.stopMediaStream(mediaStream);
-      return;
+        allTracks = mediaStream.getTracks();
+        videoTracks = mediaStream.getVideoTracks();
+      } catch {
+        throw new CameraAccessException("camera-error");
+      }
+      const videoTrack = videoTracks?.[0];
+      if (
+        !Array.isArray(allTracks) ||
+        !Array.isArray(videoTracks) ||
+        videoTrack == null ||
+        !allTracks.includes(videoTrack) ||
+        allTracks.some((candidate) => typeof candidate?.stop !== "function") ||
+        typeof videoTrack.stop !== "function" ||
+        typeof videoTrack.getSettings !== "function" ||
+        videoTrack.readyState === "ended"
+      ) {
+        throw new CameraAccessException("camera-error");
+      }
+      let returnedDeviceId: string | undefined;
+      try {
+        returnedDeviceId = videoTrack.getSettings().deviceId;
+      } catch {
+        throw new CameraAccessException("camera-error");
+      }
+      if (returnedDeviceId !== deviceId) {
+        throw new CameraAccessException("camera-error");
+      }
+      if (this.disposed || requestGeneration !== this.requestGeneration) {
+        stopMediaStream(mediaStream);
+        return;
+      }
+      const removeLivenessListeners = this.monitorMediaStreamLiveness(
+        mediaStream,
+        videoTrack,
+      );
+      if (this.disposed || requestGeneration !== this.requestGeneration) {
+        removeLivenessListeners();
+        stopMediaStream(mediaStream);
+        return;
+      }
+      this.setDeviceIdAndMediaStream(
+        deviceId,
+        mediaStream,
+        supportsFixedFocus,
+        removeLivenessListeners,
+      );
+    } catch (error) {
+      stopMediaStream(mediaStream);
+      if (this.disposed || requestGeneration !== this.requestGeneration) return;
+      const reason = cameraAccessFailureReasonForError(error);
+      action(() => { this._failureReason = reason; })();
+      throw new CameraAccessException(reason);
     }
-    // console.log("Camera selected", mediaStream.getTracks()[0]?.getSettings());
-    this.setDeviceIdAndMediaStream(deviceId, mediaStream, supportsFixedFocus);
   }
 
   setDeviceId = async (deviceId?: string) => {
