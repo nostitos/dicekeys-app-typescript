@@ -4,7 +4,7 @@ Last updated: 2026-08-08
 
 ## Current state
 
-Phases 0, 1, and 2 are complete and independently reviewed. `DK-BIP39-24-v1` is frozen on `codex/phase-1-freeze-profile`, and the credential-free build foundation is complete on `codex/phase-2-public-build-foundation`. No wallet feature code has started.
+Phases 0, 1, 2, and 3 are complete and independently reviewed. `DK-BIP39-24-v1` is frozen on `codex/phase-1-freeze-profile`, the credential-free build foundation is complete on `codex/phase-2-public-build-foundation`, and the isolated derivation module is complete on `codex/phase-3-derivation-module`. Phase 4 UI work has not started.
 
 | Item | State | Evidence |
 | --- | --- | --- |
@@ -30,14 +30,15 @@ Phases 0, 1, and 2 are complete and independently reviewed. `DK-BIP39-24-v1` is 
 | Phase 2 implementation | Complete and independently reviewed | The three root commands, pinned public-source recipes, frozen local-package locks, normalized SBOM/provenance/checksums, unsigned packaging, and evidence-only CI contract passed with no unresolved review finding |
 | Credential-free clean-machine proof | Complete | A new Linux/amd64 container with Node 22.23.2/npm 10.9.8 completed empty-cache bootstrap, all checks, and an unsigned build without private package credentials |
 | Network-denied cache replay | Complete | A separate Docker run with `--network none` had no default route, returned `ENETUNREACH` for direct HTTPS, and passed offline bootstrap/check/build; all 14 checksum-bound evidence files matched the online run |
-| Feature code | Not started | Intentionally gated |
+| Phase 3 derivation module | Complete and independently reviewed | The cache-free profile API validates exactly 25 faces, canonicalizes through the existing rotation primitive, derives with the exact frozen recipe, exposes only immutable mnemonic metadata, and keeps the reversible codec unreachable; all 27 vectors/108 rotations and 14 Jest suites/1,712 tests pass |
 
 ## Gate summary
 
 - Phase 0: passed with the credential-free dependency/build blocker documented, not repaired.
 - Phase 1: passed independent review with no unresolved findings.
 - Phase 2: passed. Credential-free empty-cache acquisition, full verification, unsigned evaluation packaging, deterministic evidence, and operating-system-denied offline replay all passed independent review with no unresolved finding.
-- Later phases: not started.
+- Phase 3: passed. Independent review found and closed malformed-face coercion and an unnecessary seeded-crypto byte-copy lifetime; strict validation, cleanup-error paths, exact vectors, and same-module browser/Electron build-mode behavior now pass with no unresolved finding.
+- Phases 4 through 7: not started.
 
 ## Known blockers
 
@@ -46,3 +47,4 @@ Phases 0, 1, and 2 are complete and independently reviewed. `DK-BIP39-24-v1` is 
 - Seeded and scanner generated WASM build environments are not fully pinned or reproducible; scanner CMake also embeds a developer-local OpenCV path.
 - `keytar@7.9.0` is archived and its prebuild installer does not content-verify downloaded native archives. Electron 29 is unsupported. Both must be replaced, upgraded, or brought under verified source-build control before release.
 - Current Electron entitlements and signed/notarized packaging are not wallet-release ready. Phase 2 artifacts are local, unsigned, and explicitly `releaseEligible: false`.
+- Phase 4 must define the verification fingerprint's bytes, algorithm, length, encoding, purpose, and privacy behavior before displaying one; the committed BIP32 fingerprint must not be silently repurposed.

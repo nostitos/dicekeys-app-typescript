@@ -1,6 +1,6 @@
 # Security Review
 
-Status: Phase 1 compatibility review complete; Phase 2 build/supply-chain review complete; application adversarial review not started
+Status: Phase 1 compatibility, Phase 2 build/supply-chain, and Phase 3 derivation reviews complete; application adversarial review not started
 Last updated: 2026-08-08
 
 No item in this file is an approval of the current application for wallet recovery.
@@ -57,6 +57,45 @@ The acceptance run used a clean Linux/amd64 container with Node 22.23.2 and npm 
 
 CI performs cross-platform cache replay with fail-fast proxy sentinels and uploads evidence JSON/SBOM/checksum files only. It does not upload the web or desktop bundles while redistribution rights remain unresolved, and it does not claim that proxy settings are operating-system-level network isolation. The Docker network-namespace run above is the Phase 2 network-denial evidence.
 
+## Phase 3 derivation-module review
+
+Fresh read-only reviewers independently audited the isolated wallet API and its
+conformance suite before any UI work. The implemented path does not use the
+generic MobX/worker response cache. It validates and copies a clean 25-face
+tuple, uses the existing rotation-canonicalization primitive, calls the pinned
+seeded-crypto `Secret` operation with the exact frozen recipe, converts the
+32-byte result through the existing BIP39 encoder, and returns only the profile
+identifier, frozen word array, and mnemonic string.
+
+The first review pass found two gate-blocking issues, both fixed before
+approval:
+
+- raw face fields were concatenated through JavaScript coercion before their
+  structure was checked, allowing malformed arrays to serialize as a valid
+  DiceKey; the boundary now requires exactly 25 non-array objects with own,
+  primitive, single-character data properties before applying the normative
+  error precedence and uniqueness checks; and
+- the seeded-crypto `secretBytes` getter returns a fresh JavaScript byte-array
+  copy, which had been copied again without wiping the getter result; the code
+  now retains and zeroes that temporary copy before deleting the native object,
+  and zeroes any owned copy before propagating a cleanup failure.
+
+Regression tests cover smuggling, non-string coercion, inherited and accessor
+fields, extra scanner metadata sanitization, numeric WASM errors, getter and
+native-delete failures, temporary and owned byte-array wiping, exact recipe
+bytes, whitespace sensitivity, all 27 vectors and 108 rotations, the BIP39
+checksum and word-list hash, ambiguity rejection, and reversible-codec API
+isolation. The final gate passes 14 Jest suites and 1,712 tests with no skipped
+or todo work, the independent Python/TypeScript parity suite, type checking,
+and web, Electron, and Forge builds.
+
+The browser/Electron test proves equal results from isolated module loads under
+both build-mode constants and verifies that the profile module has no platform
+dependency. It is not packaged-renderer E2E evidence; actual web and Electron
+runtime execution, active-flow network denial, UI state clearing, and mnemonic
+string-lifecycle review remain later gates. No verification fingerprint is
+implemented because its normative and privacy semantics are not yet defined.
+
 ## Phase 0 observations
 
 | ID | Severity | Observation | Required disposition |
@@ -82,5 +121,5 @@ CI performs cross-platform cache replay with fail-fast proxy sentinels and uploa
 - Network capture during scan, derivation, display, verification, and clear.
 - Electron permission, navigation, external-protocol, shell, camera, signing, and fuse verification on packaged artifacts.
 - Release-grade resolution of the recorded license, generated-WASM, keytar, Electron, entitlement, and signing blockers.
-- Secret-object deletion, unnecessary string-copy review, cache eviction, and honest limitations of JavaScript erasure.
+- UI/session cache eviction, mnemonic string-copy review, clear/exit behavior, and honest limitations of JavaScript erasure beyond the reviewed Phase 3 byte-array and native-object cleanup.
 - Independent review after implementation, with no self-approval.

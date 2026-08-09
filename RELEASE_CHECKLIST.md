@@ -11,6 +11,7 @@ Last updated: 2026-08-08
 - [x] At least 20 public synthetic vectors cover required edge cases (27 committed).
 - [x] A second BIP39 library validates every mnemonic.
 - [x] Two independent wallet libraries agree on BIP32 fingerprints and BIP84 addresses.
+- [x] The isolated production API matches all 27 vectors and 108 rotations without exposing raw entropy.
 - [ ] Test-mode hardware-wallet acceptance is complete without real funds.
 - [x] An independent reviewer reproduced the words using the published specification alone.
 
@@ -35,6 +36,7 @@ Last updated: 2026-08-08
 - [ ] Wallet generation succeeds with networking disabled.
 - [ ] Outbound-request E2E test passes for the complete wallet flow.
 - [ ] No DiceKey, entropy, or mnemonic is persisted, logged, transmitted, or placed in URLs/history.
+- [x] The isolated derivation API deletes its native `Secret` and wipes temporary and owned entropy byte arrays on reviewed success and cleanup-error paths.
 - [ ] No automatic clipboard access; default wallet flow has no copy or QR export.
 - [ ] Explicit reveal, backup verification, and clear/exit behavior pass.
 - [ ] Web CSP and service-worker controls pass review.
@@ -44,7 +46,8 @@ Last updated: 2026-08-08
 
 ## Product boundaries
 
-- [ ] The reversible layout codec cannot be selected through the wallet API or UI.
+- [x] The reversible layout codec cannot be selected through the wallet API.
+- [ ] The reversible layout codec cannot be selected through the wallet UI.
 - [ ] The normal UI contains no signing, transaction, balance, address, network-wallet, passphrase-storage, SLIP39, or cloud-backup feature.
 - [ ] UI exposes only the 24-word English v1 profile.
 

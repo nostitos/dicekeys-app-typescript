@@ -133,3 +133,47 @@ Credential-free installation and an unsigned local package are necessary but ins
 - Electron is upgraded from unsupported major 29;
 - wallet-inappropriate debugger, DYLD, unsigned-executable-memory, and library-validation entitlements are removed or narrowly justified; and
 - the signed release path aborts on any signing or notarization failure.
+
+## D-018: verification fingerprint is a Phase 4 decision
+
+Date: 2026-08-08
+State: accepted Phase 3 scope boundary
+
+The isolated Phase 3 derivation result exposes the profile identifier, an
+immutable 24-word array, and the mnemonic string. It does not invent or expose
+a `verificationFingerprint`: neither the frozen profile, the vector corpus,
+nor the current application defines that value.
+
+The committed BIP32 master fingerprint remains downstream verification
+metadata under D-010. It depends on wallet/passphrase semantics and must not be
+silently repurposed as a profile output. Before the Phase 4 UI displays any
+verification fingerprint, a separate reviewed decision must define its exact
+source bytes, domain separation, algorithm, truncation, encoding and display
+format, collision purpose, and privacy/linkability behavior.
+
+This scope decision does not change `DK-BIP39-24-v1` derivation bytes or any
+committed vector, so it does not require vector regeneration.
+
+## D-019: the wallet profile uses a cache-free, fail-closed derivation boundary
+
+Date: 2026-08-08
+State: accepted and independently reviewed in Phase 3
+
+The production wallet-profile API validates and sanitizes exactly 25 face
+objects before canonicalization and calls seeded crypto directly. It does not
+route secret inputs or derived responses through the generic MobX/worker cache.
+The public barrel exports only the frozen profile and one-argument mnemonic
+derivation function; raw entropy, test vectors, validators, recipe overrides,
+and the reversible layout codec remain outside that surface.
+
+The seeded-crypto `secretBytes` getter creates a JavaScript byte-array copy.
+The derivation boundary therefore retains and wipes that copy before deleting
+the native `Secret`, owns only the additional copy required by the BIP39
+encoder, and wipes that copy before returning the mnemonic-only public result
+or propagating a cleanup failure. Immutable JavaScript seed and mnemonic
+strings still cannot be perfectly erased; the later UI must minimize their
+lifetime and clear all application references honestly.
+
+Browser-mode and Electron-mode isolated loads must produce the same committed
+anchor, but that test is not a substitute for packaged runtime E2E. Full web
+and Electron execution remains part of the Phase 6 release-candidate gate.
